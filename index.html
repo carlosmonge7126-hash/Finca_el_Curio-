@@ -5,94 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>IA Trader Vision Pro</title>
     <style>
-        :root { --primary: #00ff88; --bg: #0a0a0a; --panel: #161616; --text: #ffffff; }
-        
-        * { box-sizing: border-box; }
-        
-        body { 
-            margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex; flex-direction: column; 
-            height: 100vh; height: -webkit-fill-available; /* Ajuste para Safari móvil */
-            width: 100vw; overflow: hidden;
-        }
-
-        /* Contenedor Principal Flexible */
-        #main-view {
-            flex: 1; position: relative; background: #000;
-            display: flex; flex-direction: column; overflow: hidden;
-            min-height: 0; /* Permite que el video se encoja al abrir el teclado */
-        }
-
-        video {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 1;
-        }
-        .mirror { transform: scaleX(-1); }
-
-        /* Capa de mensajes (Chat) */
-        #chat-log {
-            position: relative; z-index: 2; flex: 1;
-            padding: 15px; display: flex; flex-direction: column; gap: 10px;
-            overflow-y: auto; background: rgba(0,0,0,0.1);
-        }
-
-        .msg {
-            padding: 12px 16px; border-radius: 12px; max-width: 85%;
-            font-size: 15px; line-height: 1.4; backdrop-filter: blur(8px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        .user-msg { background: rgba(0, 123, 255, 0.8); align-self: flex-end; border: 1px solid #007bff; }
-        .ai-msg { background: rgba(25, 25, 25, 0.9); align-self: flex-start; border: 1px solid var(--primary); color: var(--primary); font-weight: 500; }
-
-        /* Barra de Controles Optimizada para Móvil */
-        .controls {
-            min-height: 85px; background: var(--panel);
-            display: flex; align-items: center; padding: 10px 15px;
-            gap: 10px; border-top: 1px solid #333;
-            z-index: 100; position: relative;
-            padding-bottom: env(safe-area-inset-bottom); /* Espacio para iPhones modernos */
-        }
-
-        input {
-            flex: 1; background: #222; border: 1px solid #444; color: white;
-            padding: 14px; border-radius: 10px; outline: none; font-size: 16px;
-            -webkit-appearance: none; /* Estilo limpio en iOS */
-        }
-
-        button {
-            background: var(--primary); color: #000; border: none;
-            padding: 14px 20px; border-radius: 10px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; white-space: nowrap;
-            font-size: 14px;
-        }
-        button:active { transform: scale(0.95); opacity: 0.8; }
-        button:disabled { background: #444; color: #888; }
-
+        :root { --primary: #00ff88; --bg: #000; --panel: rgba(22, 22, 22, 0.9); --text: #ffffff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+        #camera-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #chat-log { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 2; max-height: 40%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .msg { padding: 10px; border-radius: 8px; max-width: 85%; font-size: 14px; backdrop-filter: blur(10px); pointer-events: auto; }
+        .user-msg { background: rgba(0, 123, 255, 0.6); align-self: flex-end; }
+        .ai-msg { background: rgba(0, 0, 0, 0.7); align-self: flex-start; border-left: 3px solid var(--primary); color: #00ff88; }
+        .controls { position: absolute; bottom: 0; left: 0; right: 0; z-index: 3; background: var(--panel); display: flex; align-items: center; padding: 15px; gap: 10px; padding-bottom: env(safe-area-inset-bottom, 15px); }
+        input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; }
+        button { background: var(--primary); color: #000; border: none; padding: 12px 18px; border-radius: 8px; font-weight: bold; }
         canvas { display: none; }
     </style>
 </head>
 <body>
-
-    <div id="main-view">
-        <video id="webcam" autoplay playsinline></video>
-        <div id="chat-log">
-            <div class="msg ai-msg">SISTEMA TRADER ACTIVO. Apunta a una gráfica y consulta.</div>
-        </div>
-    </div>
-
+    <div id="camera-container"><video id="webcam" autoplay playsinline></video></div>
+    <div id="chat-log"><div class="msg ai-msg">SISTEMA ACTIVO. Apunta a la gráfica y dale a ANALIZAR.</div></div>
     <div class="controls">
-        <input type="text" id="user-prompt" placeholder="¿Qué patrón ves?" autocomplete="off">
+        <input type="text" id="user-prompt" placeholder="¿Qué ves aquí?">
         <button id="send-btn">ANALIZAR</button>
     </div>
-
     <canvas id="snapshot"></canvas>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const API_KEY = "AIzaSyDHVgalTJ8RYqxnuCE62CbF74GNtDAcSQ8"; // <--- PEGA TU CLAVE AQUÍ
-        // ---------------------
-
+        const API_KEY = "AIzaSyAG3LgTaD4WYNN3YhMzAznZcoR51EKV67w";
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const promptInput = document.getElementById('user-prompt');
@@ -101,15 +39,10 @@
 
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
             } catch (err) {
-                console.error("Fallo cámara trasera, intentando frontal:", err);
-                const fallback = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = fallback;
-                video.classList.add('mirror');
+                video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
             }
         }
 
@@ -122,56 +55,41 @@
         }
 
         async function runAnalysis() {
-            const prompt = promptInput.value.trim();
-            if (!prompt) return;
-            if (API_KEY.includes("TU_API_KEY")) {
-                addMessage("ERROR: No has puesto tu API KEY en el código.", "ai");
-                return;
-            }
-
+            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading?";
             addMessage(prompt, 'user');
             promptInput.value = "";
-            promptInput.blur(); // Cierra el teclado en móvil tras enviar
             sendBtn.disabled = true;
+            addMessage("Procesando imagen...", "ai");
 
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0);
-            const base64Image = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
-
-            addMessage("Analizando gráfica...", "ai");
+            const base64Image = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ]
-                        }],
-                        system_instruction: {
-                            parts: [{ text: "Eres un analista técnico de trading. Analiza la imagen buscando soportes, resistencias, indicadores y velas. Sé directo y profesional." }]
-                        }
+                        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
                     })
                 });
 
                 const data = await response.json();
-                const aiText = data.candidates[0].content.parts[0].text;
-                addMessage(aiText, "ai");
+                if (data.error) {
+                    addMessage("Error de Google: " + data.error.message, "ai");
+                } else {
+                    addMessage(data.candidates[0].content.parts[0].text, "ai");
+                }
             } catch (err) {
-                addMessage("Error de conexión. Revisa tu internet o la clave.", "ai");
+                addMessage("Fallo al conectar. Verifica que tu clave no tenga restricciones.", "ai");
             } finally {
                 sendBtn.disabled = false;
             }
         }
 
         sendBtn.addEventListener('click', runAnalysis);
-        promptInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') runAnalysis(); });
-        
         startCamera();
     </script>
 </body>
