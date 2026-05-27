@@ -12,14 +12,11 @@
         video { width:100%; height:100%; object-fit: cover; }
 
         #chat-log { position: absolute; top:55px; left:12px; right:12px; bottom:130px; overflow-y:auto; z-index:2; display:flex; flex-direction:column; gap:12px; pointer-events:none; }
-        .msg { padding:12px 15px; border-radius:10px; max-width:92%; font-size:15.2px; backdrop-filter: blur(10px); pointer-events:auto; }
+        .msg { padding:12px 15px; border-radius:10px; max-width:92%; font-size:15px; backdrop-filter: blur(10px); pointer-events:auto; }
         .user-msg { background: rgba(0,123,255,0.75); align-self:flex-end; }
         .ai-msg { background: rgba(20,20,20,0.92); align-self:flex-start; border-left:4px solid var(--primary); }
 
-        .decision-box {
-            font-size: 24px; font-weight: bold; text-align: center; padding: 18px 12px;
-            border-radius: 12px; margin: 10px 0; border: 3px solid; line-height: 1.3;
-        }
+        .decision-box { font-size: 24px; font-weight: bold; text-align: center; padding: 18px; border-radius: 12px; margin: 10px 0; border: 3px solid; }
         .buy { background: rgba(0,255,100,0.18); color:#00ff88; border-color:#00ff88; }
         .sell { background: rgba(255,70,70,0.18); color:#ff5555; border-color:#ff5555; }
         .wait { background: rgba(255,180,0,0.18); color:#ffcc00; border-color:#ffcc00; }
@@ -42,22 +39,21 @@
     <div class="status" id="status">Iniciando...</div>
     
     <div id="chat-log">
-        <div class="msg ai-msg">
-            Apunta a la gráfica y presiona analizar
-        </div>
+        <div class="msg ai-msg">Apunta a la gráfica y prueba</div>
     </div>
 
     <div class="controls">
         <input type="text" id="user-prompt" placeholder="Pregunta adicional...">
         <button id="send-btn">ANÁLISIS RÁPIDO</button>
-        <button id="trading-btn" class="accent">ANÁLISIS DETALLADO</button>
+        <button id="trading-btn" class="accent">DETALLADO</button>
         <button id="clear-btn">Limpiar</button>
     </div>
 
     <canvas id="snapshot"></canvas>
 
     <script>
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";
+        // ==================== CAMBIA ESTO ====================
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ←←← REEMPLAZA CON TU CLAVE REAL
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
@@ -68,13 +64,11 @@
         const chatLog = document.getElementById('chat-log');
         const statusEl = document.getElementById('status');
 
-        const MODELS = ["gemini-3.5-flash", "gemini-2.5-flash"];
-
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
-                statusEl.textContent = "✅ Listo";
+                statusEl.textContent = "✅ Cámara lista";
                 statusEl.style.color = "#00ff88";
             } catch (err) {
                 statusEl.textContent = "❌ Error cámara";
@@ -90,52 +84,56 @@
         }
 
         async function analyze(isDetailed) {
+            if (API_KEY === "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego") {
+                addMessage("❌ Error: Debes reemplazar 'AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego' con tu API Key real de Google Gemini", "ai");
+                return;
+            }
+
             const userText = promptInput.value.trim();
-            
-            const basePrompt = `Eres un trader profesional. Analiza esta gráfica técnica rápidamente.
-Devuelve siempre este formato exacto y conciso:
+            const prompt = `Eres trader profesional. Analiza esta gráfica y responde exactamente así:
 
 DECISIÓN: COMPRAR / VENDER / NO INVERTIR (XX%)
-RAZÓN: (máximo 15 palabras)
-CONFIANZA: Alto / Medio / Bajo
+RAZÓN: (máximo 15 palabras)`;
 
-${isDetailed ? 'Análisis breve adicional (2 líneas máximo):' : ''}`;
-
-            addMessage(userText || (isDetailed ? "ANÁLISIS DETALLADO" : "ANÁLISIS RÁPIDO"), 'user');
+            addMessage(userText || "ANÁLISIS RÁPIDO", 'user');
             promptInput.value = "";
             sendBtn.disabled = tradingBtn.disabled = true;
-            statusEl.textContent = "Analizando...";
+            statusEl.textContent = "Enviando a IA...";
 
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            const base64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
 
-            let success = false;
-            for (const model of MODELS) {
-                try {
-                    statusEl.textContent = `→ ${model}`;
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
-                    
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: basePrompt }, { inline_data: { mime_type: "image/jpeg", data: base64 }}]}],
-                            generationConfig: { temperature: 0.35, maxOutputTokens: 650 }
-                        })
-                    });
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                { inline_data: { mime_type: "image/jpeg", data: base64 } }
+                            ]
+                        }],
+                        generationConfig: { temperature: 0.3, maxOutputTokens: 600 }
+                    })
+                });
 
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error.message);
-                    
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error("Error API:", data.error);
+                    addMessage(`❌ Error Google: ${data.error.message}`, "ai");
+                } else {
                     addMessage(data.candidates[0].content.parts[0].text, "ai");
-                    success = true;
-                    break;
-                } catch (e) { console.warn(e); }
+                }
+            } catch (err) {
+                console.error("Error de fetch:", err);
+                addMessage("❌ Error de conexión. Revisa tu API Key y conexión a internet.", "ai");
             }
-
-            if (!success) addMessage("❌ Error de conexión", "ai");
 
             sendBtn.disabled = tradingBtn.disabled = false;
             statusEl.textContent = "✅ Listo";
