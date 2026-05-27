@@ -16,11 +16,6 @@
         .user-msg { background: rgba(0,123,255,0.75); align-self:flex-end; }
         .ai-msg { background: rgba(20,20,20,0.92); align-self:flex-start; border-left:4px solid var(--primary); }
 
-        .decision-box { font-size: 24px; font-weight: bold; text-align: center; padding: 18px; border-radius: 12px; margin: 10px 0; border: 3px solid; }
-        .buy { background: rgba(0,255,100,0.18); color:#00ff88; border-color:#00ff88; }
-        .sell { background: rgba(255,70,70,0.18); color:#ff5555; border-color:#ff5555; }
-        .wait { background: rgba(255,180,0,0.18); color:#ffcc00; border-color:#ffcc00; }
-
         .controls { position: absolute; bottom:0; left:0; right:0; z-index:3; background:var(--panel); padding:12px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #222; }
         input { flex:1; background:#1a1a1a; border:1px solid #333; color:white; padding:13px; border-radius:10px; font-size:15.5px; }
         button { background:var(--primary); color:#000; border:none; padding:13px 20px; border-radius:10px; font-weight:bold; cursor:pointer; }
@@ -52,8 +47,8 @@
     <canvas id="snapshot"></canvas>
 
     <script>
-        // ==================== CAMBIA ESTO ====================
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ←←← REEMPLAZA CON TU CLAVE REAL
+        // ==================== PEGA TU CLAVE AQUÍ ====================
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ←←← REEMPLAZA ESTO con tu clave real
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
@@ -85,25 +80,23 @@
 
         async function analyze(isDetailed) {
             if (API_KEY === "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego") {
-                addMessage("❌ Error: Debes reemplazar 'AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego' con tu API Key real de Google Gemini", "ai");
+                addMessage("❌ Primero reemplaza 'AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego' con tu API Key real", "ai");
                 return;
             }
 
-            const userText = promptInput.value.trim();
             const prompt = `Eres trader profesional. Analiza esta gráfica y responde exactamente así:
 
 DECISIÓN: COMPRAR / VENDER / NO INVERTIR (XX%)
 RAZÓN: (máximo 15 palabras)`;
 
-            addMessage(userText || "ANÁLISIS RÁPIDO", 'user');
-            promptInput.value = "";
+            addMessage("ANÁLISIS RÁPIDO", 'user');
             sendBtn.disabled = tradingBtn.disabled = true;
-            statusEl.textContent = "Enviando a IA...";
+            statusEl.textContent = "Enviando...";
 
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+            const base64 = canvas.toDataURL('image/jpeg', 0.78).split(',')[1];
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`;
@@ -125,14 +118,12 @@ RAZÓN: (máximo 15 palabras)`;
                 const data = await response.json();
 
                 if (data.error) {
-                    console.error("Error API:", data.error);
-                    addMessage(`❌ Error Google: ${data.error.message}`, "ai");
+                    addMessage(`❌ Error: ${data.error.message}`, "ai");
                 } else {
                     addMessage(data.candidates[0].content.parts[0].text, "ai");
                 }
             } catch (err) {
-                console.error("Error de fetch:", err);
-                addMessage("❌ Error de conexión. Revisa tu API Key y conexión a internet.", "ai");
+                addMessage("❌ Error de conexión. Revisa tu API Key.", "ai");
             }
 
             sendBtn.disabled = tradingBtn.disabled = false;
@@ -143,9 +134,7 @@ RAZÓN: (máximo 15 palabras)`;
         tradingBtn.addEventListener('click', () => analyze(true));
         clearBtn.addEventListener('click', () => chatLog.innerHTML = '');
 
-        promptInput.addEventListener('keypress', e => { if (e.key === 'Enter') analyze(false); });
-
         window.addEventListener('load', startCamera);
     </script>
 </body>
-</html>
+</html>    
