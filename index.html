@@ -9,14 +9,13 @@
             --primary: #00ff88;
             --bg: #000;
             --panel: rgba(20, 20, 20, 0.95);
-            --text: #ffffff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             background: var(--bg);
-            color: var(--text);
+            color: #fff;
             font-family: 'Segoe UI', system-ui, sans-serif;
             height: 100vh;
             width: 100vw;
@@ -33,7 +32,11 @@
             background: #000;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; }
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+        }
 
         #chat-log {
             position: absolute;
@@ -55,7 +58,6 @@
             line-height: 1.4;
             backdrop-filter: blur(12px);
             pointer-events: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .user-msg {
@@ -106,9 +108,8 @@
 
         .status {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(0,0,0,0.7);
+            top: 12px; right: 12px;
+            background: rgba(0,0,0,0.8);
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 13px;
@@ -118,10 +119,10 @@
 </head>
 <body>
     <div id="camera-container">
-        <video id="webcam" autoplay playsinline></video>
+        <video id="webcam" autoplay playsinline muted></video>
     </div>
     
-    <div class="status" id="status">Cámara activa</div>
+    <div class="status" id="status">Iniciando cámara...</div>
     
     <div id="chat-log">
         <div class="msg ai-msg">
@@ -138,7 +139,7 @@
     <canvas id="snapshot"></canvas>
 
     <script>
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ← Cambia esto
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ← Cambia esto por tu clave real
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
@@ -147,7 +148,6 @@
         const chatLog = document.getElementById('chat-log');
         const statusEl = document.getElementById('status');
 
-        // Modelos en orden de preferencia (del más nuevo al más estable)
         const MODELS = [
             "gemini-3.5-flash",
             "gemini-3.1-flash-lite",
@@ -156,15 +156,26 @@
         ];
 
         async function startCamera() {
+            statusEl.textContent = "Solicitando permisos de cámara...";
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" } 
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
                 video.srcObject = stream;
-                statusEl.textContent = "Cámara activa • Listo";
+                
+                video.onloadedmetadata = () => {
+                    statusEl.textContent = "✅ Cámara activa";
+                    statusEl.style.color = "#00ff88";
+                };
             } catch (err) {
-                statusEl.textContent = "Error de cámara";
+                console.error(err);
+                statusEl.textContent = "❌ Error cámara: " + err.message;
                 statusEl.style.color = "#ff4444";
+                addMessage("No se pudo acceder a la cámara. Asegúrate de permitir los permisos.", "ai");
             }
         }
 
@@ -183,77 +194,64 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
+                    contents: [{ 
                         parts: [
                             { text: prompt },
                             { inline_data: { mime_type: "image/jpeg", data: base64Image } }
                         ]
                     }],
-                    generationConfig: {
-                        temperature: 0.6,
-                        maxOutputTokens: 1000,
-                    }
+                    generationConfig: { temperature: 0.6, maxOutputTokens: 1000 }
                 })
             });
 
             const data = await response.json();
-            
-            if (data.error) {
-                throw new Error(data.error.message);
-            }
-            
+            if (data.error) throw new Error(data.error.message);
             return data.candidates[0].content.parts[0].text;
         }
 
         async function runAnalysis() {
-            const userText = promptInput.value.trim();
-            const prompt = userText || "¿Qué ves en esta gráfica de trading? Analiza tendencia, soportes, resistencias, patrones y posibles setups.";
-
+            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading? Analiza tendencia, soportes, resistencias y setups.";
+            
             addMessage(prompt, 'user');
             promptInput.value = "";
             sendBtn.disabled = true;
-            statusEl.textContent = "Analizando con IA...";
+            statusEl.textContent = "Capturando imagen...";
 
-            // Capturar imagen
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64Image = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+            const base64Image = canvas.toDataURL('image/jpeg', 0.78).split(',')[1];
 
             let success = false;
 
             for (const model of MODELS) {
                 try {
-                    statusEl.textContent = `Probando modelo: ${model}...`;
+                    statusEl.textContent = `Probando ${model}...`;
                     const responseText = await tryModel(model, base64Image, prompt);
-                    
                     addMessage(`<strong>[${model}]</strong><br>${responseText}`, "ai");
                     success = true;
                     break;
                 } catch (err) {
                     console.warn(`Modelo ${model} falló:`, err.message);
-                    // Solo mostramos error si es el último modelo
-                    if (model === MODELS[MODELS.length - 1]) {
-                        addMessage(`Error con todos los modelos: ${err.message}`, "ai");
-                    }
                 }
             }
 
             if (!success) {
-                addMessage("No se pudo conectar con ningún modelo. Revisa tu API Key o conexión.", "ai");
+                addMessage("Error: No se pudo conectar con la IA. Revisa tu API Key.", "ai");
             }
 
             sendBtn.disabled = false;
-            statusEl.textContent = "Cámara activa • Listo";
+            statusEl.textContent = "✅ Cámara activa";
         }
 
         // Eventos
         sendBtn.addEventListener('click', runAnalysis);
-        promptInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') runAnalysis();
-        });
+        promptInput.addEventListener('keypress', e => { if (e.key === 'Enter') runAnalysis(); });
 
-        window.addEventListener('load', startCamera);
+        // Iniciar
+        window.addEventListener('load', () => {
+            startCamera();
+        });
     </script>
 </body>
 </html>
