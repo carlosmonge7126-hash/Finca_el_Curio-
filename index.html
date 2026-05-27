@@ -20,7 +20,7 @@
         video { width:100%; height:100%; object-fit: cover; }
 
         #chat-log {
-            position: absolute; top:12px; left:12px; right:12px; bottom:170px;
+            position: absolute; top:12px; left:12px; right:12px; bottom:160px;
             overflow-y:auto; z-index:2; display:flex; flex-direction:column; gap:10px;
             pointer-events:none; padding-right:8px;
         }
@@ -34,12 +34,11 @@
             border-left:5px solid var(--primary); color:#00ffbb;
         }
         .decision {
-            font-size: 18px; font-weight: bold; padding: 14px; text-align: center; 
-            border-radius: 10px; margin: 10px 0; border: 2px solid;
+            font-size: 18px; font-weight: bold; padding: 12px; text-align: center; border-radius: 10px; margin: 8px 0;
         }
-        .buy { background: rgba(0, 255, 100, 0.15); color: #00ff88; border-color: #00ff88; }
-        .sell { background: rgba(255, 80, 80, 0.15); color: #ff5555; border-color: #ff5555; }
-        .wait { background: rgba(255, 200, 0, 0.15); color: #ffcc00; border-color: #ffcc00; }
+        .buy { background: rgba(0, 255, 100, 0.2); color: #00ff88; border: 2px solid #00ff88; }
+        .sell { background: rgba(255, 80, 80, 0.2); color: #ff5555; border: 2px solid #ff5555; }
+        .wait { background: rgba(255, 200, 0, 0.2); color: #ffcc00; border: 2px solid #ffcc00; }
 
         .controls {
             position: absolute; bottom:0; left:0; right:0; z-index:3; background:var(--panel);
@@ -48,7 +47,7 @@
         }
         input {
             flex:1; background:#1a1a1a; border:1px solid #333; color:white; 
-            padding:14px 16px; border-radius:12px; font-size:16px;
+            padding:14px 16px; border-radius:12px; font-size:16px; min-width:180px;
         }
         button {
             background:var(--primary); color:#000; border:none; padding:13px 18px;
@@ -71,20 +70,20 @@
 <body>
     <div class="header">TRADER VISION PRO</div>
     <div id="camera-container"><video id="webcam" autoplay playsinline muted></video></div>
-    <div class="status" id="status">Iniciando cámara...</div>
+    <div class="status" id="status">Iniciando...</div>
     
     <div id="chat-log">
         <div class="msg ai-msg">
             <strong>IA Trader Vision Pro</strong><br>
-            Apunta a la gráfica y elige modo de análisis
+            Apunta a la gráfica y presiona ANALIZAR para decisión rápida
         </div>
     </div>
 
     <div class="controls">
         <input type="text" id="user-prompt" placeholder="Pregunta adicional...">
-        <button id="send-btn">ANÁLISIS RÁPIDO</button>
+        <button id="send-btn">ANALIZAR</button>
         <button id="trading-btn" class="accent">ANÁLISIS DETALLADO</button>
-        <button id="clear-btn">Limpiar Chat</button>
+        <button id="clear-btn">Limpiar</button>
     </div>
 
     <canvas id="snapshot"></canvas>
@@ -132,7 +131,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image }}]}],
-                    generationConfig: { temperature: 0.45, maxOutputTokens: 1200 }
+                    generationConfig: { temperature: 0.4, maxOutputTokens: 800 }
                 })
             });
             const data = await response.json();
@@ -142,38 +141,27 @@
 
         async function runAnalysis(isDetailed = false) {
             const userText = promptInput.value.trim();
-            
             let prompt = "";
-            
+
             if (isDetailed) {
-                prompt = `Analiza esta gráfica como trader profesional. 
-Primero da una decisión clara y luego el análisis detallado usando este formato exacto:
-
-DECISIÓN: COMPRAR / VENDER / NO INVERTIR
-RAZÓN PRINCIPAL: (una frase corta)
-CONFIANZA: Alto / Medio / Bajo
-
-=== ANÁLISIS DETALLADO ===
-• Tendencia general:
-• Niveles clave (soporte/resistencia):
-• Patrones detectados:
-• Recomendación de Stop Loss y Take Profit:
-• Conclusión final:`;
+                prompt = `Eres un trader profesional. Analiza esta gráfica con detalle y responde de forma estructurada.`;
             } else {
+                // Prompt RÁPIDO y DIRECTO para el botón ANALIZAR
                 prompt = `Analiza esta gráfica de trading de forma rápida y directa. 
-Responde SOLO con este formato:
+Responde SOLO con el siguiente formato:
 
 DECISIÓN: COMPRAR / VENDER / NO INVERTIR
 RAZÓN: (una frase corta)
-CONFIANZA: Alto / Medio / Bajo`;
+CONFIANZA: Alto / Medio / Bajo
+
+Sé muy claro y decisivo.`;
             }
 
             addMessage(userText || (isDetailed ? "ANÁLISIS DETALLADO" : "ANÁLISIS RÁPIDO"), 'user');
             promptInput.value = "";
             sendBtn.disabled = tradingBtn.disabled = true;
-            statusEl.textContent = isDetailed ? "Análisis Detallado..." : "Analizando rápido...";
+            statusEl.textContent = isDetailed ? "Análisis detallado..." : "Analizando rápido...";
 
-            // Capturar imagen
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
@@ -192,15 +180,15 @@ CONFIANZA: Alto / Medio / Bajo`;
                 }
             }
 
-            if (!success) addMessage("❌ Error conectando con la IA. Revisa tu API Key.", "ai");
+            if (!success) addMessage("❌ Error de conexión con la IA.", "ai");
 
             sendBtn.disabled = tradingBtn.disabled = false;
             statusEl.textContent = "✅ Cámara activa";
         }
 
         // Eventos
-        sendBtn.addEventListener('click', () => runAnalysis(false));
-        tradingBtn.addEventListener('click', () => runAnalysis(true));
+        sendBtn.addEventListener('click', () => runAnalysis(false));           // Rápido
+        tradingBtn.addEventListener('click', () => runAnalysis(true));        // Detallado
         clearBtn.addEventListener('click', () => chatLog.innerHTML = '');
 
         promptInput.addEventListener('keypress', e => {
