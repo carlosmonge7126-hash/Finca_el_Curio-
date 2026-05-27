@@ -5,92 +5,255 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>IA Trader Vision Pro</title>
     <style>
-        :root { --primary: #00ff88; --bg: #000; --panel: rgba(22, 22, 22, 0.9); --text: #ffffff; }
+        :root {
+            --primary: #00ff88;
+            --bg: #000;
+            --panel: rgba(20, 20, 20, 0.95);
+            --text: #ffffff;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
-        #camera-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #camera-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            background: #000;
+        }
+
         video { width: 100%; height: 100%; object-fit: cover; }
-        #chat-log { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 2; max-height: 40%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .msg { padding: 10px; border-radius: 8px; max-width: 85%; font-size: 14px; backdrop-filter: blur(10px); pointer-events: auto; }
-        .user-msg { background: rgba(0, 123, 255, 0.6); align-self: flex-end; }
-        .ai-msg { background: rgba(0, 0, 0, 0.7); align-self: flex-start; border-left: 3px solid var(--primary); color: #00ff88; }
-        .controls { position: absolute; bottom: 0; left: 0; right: 0; z-index: 3; background: var(--panel); display: flex; align-items: center; padding: 15px; gap: 10px; padding-bottom: env(safe-area-inset-bottom, 15px); }
-        input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; }
-        button { background: var(--primary); color: #000; border: none; padding: 12px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        #chat-log {
+            position: absolute;
+            top: 12px; left: 12px; right: 12px;
+            max-height: 45%;
+            overflow-y: auto;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .msg {
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 88%;
+            font-size: 15px;
+            line-height: 1.4;
+            backdrop-filter: blur(12px);
+            pointer-events: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .user-msg {
+            background: rgba(0, 123, 255, 0.75);
+            align-self: flex-end;
+        }
+
+        .ai-msg {
+            background: rgba(15, 15, 15, 0.9);
+            align-self: flex-start;
+            border-left: 4px solid var(--primary);
+            color: #00ffaa;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 3;
+            background: var(--panel);
+            padding: 16px 12px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        button {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
         canvas { display: none; }
+
+        .status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 4;
+        }
     </style>
 </head>
 <body>
-    <div id="camera-container"><video id="webcam" autoplay playsinline></video></div>
-    <div id="chat-log"><div class="msg ai-msg">SISTEMA ACTIVO. Apunta a la gráfica y dale a ANALIZAR.</div></div>
+    <div id="camera-container">
+        <video id="webcam" autoplay playsinline></video>
+    </div>
+    
+    <div class="status" id="status">Cámara activa</div>
+    
+    <div id="chat-log">
+        <div class="msg ai-msg">
+            <strong>IA Trader Vision Pro</strong><br>
+            Apunta a la gráfica y presiona ANALIZAR
+        </div>
+    </div>
+
     <div class="controls">
-        <input type="text" id="user-prompt" placeholder="¿Qué ves aquí?">
+        <input type="text" id="user-prompt" placeholder="¿Qué ves en esta gráfica?">
         <button id="send-btn">ANALIZAR</button>
     </div>
+
     <canvas id="snapshot"></canvas>
 
     <script>
-        // ASEGÚRATE DE QUE ESTA CLAVE SEA LA NUEVA QUE CREASTE HOY
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego"; 
-        
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ← Cambia esto
+
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const promptInput = document.getElementById('user-prompt');
         const sendBtn = document.getElementById('send-btn');
         const chatLog = document.getElementById('chat-log');
+        const statusEl = document.getElementById('status');
 
-       
+        // Modelos en orden de preferencia (del más nuevo al más estable)
+        const MODELS = [
+            "gemini-3.5-flash",
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite"
+        ];
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" } 
+                });
+                video.srcObject = stream;
+                statusEl.textContent = "Cámara activa • Listo";
+            } catch (err) {
+                statusEl.textContent = "Error de cámara";
+                statusEl.style.color = "#ff4444";
+            }
+        }
 
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `msg ${type}-msg`;
-            div.innerText = text;
+            div.innerHTML = type === 'ai' ? text.replace(/\n/g, '<br>') : text;
             chatLog.appendChild(div);
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-async function runAnalysis() {
-    const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading?";
-    addMessage(prompt, 'user');
-    promptInput.value = "";
-    sendBtn.disabled = true;
-    addMessage("Analizando con configuración estable...", "ai");
+        async function tryModel(modelName, base64Image, prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ]
+                    }],
+                    generationConfig: {
+                        temperature: 0.6,
+                        maxOutputTokens: 1000,
+                    }
+                })
+            });
 
-    const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
-    const base64Image = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+            
+            return data.candidates[0].content.parts[0].text;
+        }
 
-    try {
-        // Usamos el nombre de modelo más estándar para v1beta
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
-            })
+        async function runAnalysis() {
+            const userText = promptInput.value.trim();
+            const prompt = userText || "¿Qué ves en esta gráfica de trading? Analiza tendencia, soportes, resistencias, patrones y posibles setups.";
+
+            addMessage(prompt, 'user');
+            promptInput.value = "";
+            sendBtn.disabled = true;
+            statusEl.textContent = "Analizando con IA...";
+
+            // Capturar imagen
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 720;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const base64Image = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+
+            let success = false;
+
+            for (const model of MODELS) {
+                try {
+                    statusEl.textContent = `Probando modelo: ${model}...`;
+                    const responseText = await tryModel(model, base64Image, prompt);
+                    
+                    addMessage(`<strong>[${model}]</strong><br>${responseText}`, "ai");
+                    success = true;
+                    break;
+                } catch (err) {
+                    console.warn(`Modelo ${model} falló:`, err.message);
+                    // Solo mostramos error si es el último modelo
+                    if (model === MODELS[MODELS.length - 1]) {
+                        addMessage(`Error con todos los modelos: ${err.message}`, "ai");
+                    }
+                }
+            }
+
+            if (!success) {
+                addMessage("No se pudo conectar con ningún modelo. Revisa tu API Key o conexión.", "ai");
+            }
+
+            sendBtn.disabled = false;
+            statusEl.textContent = "Cámara activa • Listo";
+        }
+
+        // Eventos
+        sendBtn.addEventListener('click', runAnalysis);
+        promptInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') runAnalysis();
         });
 
-        const data = await response.json();
-        
-        if (data.error) {
-            // Si falla, aquí veremos el motivo real
-            addMessage("Respuesta Google: " + data.error.message, "ai");
-        } else {
-            addMessage(data.candidates[0].content.parts[0].text, "ai");
-        }
-    } catch (err) {
-        addMessage("Error de conexión.", "ai");
-    } finally {
-        sendBtn.disabled = false;
-    }
-}
-
-        sendBtn.addEventListener('click', runAnalysis);
-        startCamera();
+        window.addEventListener('load', startCamera);
     </script>
 </body>
 </html>
