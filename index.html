@@ -39,16 +39,10 @@
 
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" } 
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
             } catch (err) {
-                try {
-                    video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
-                } catch (e) {
-                    addMessage("Error: No se pudo acceder a la cámara.", "ai");
-                }
+                video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
             }
         }
 
@@ -61,11 +55,11 @@
         }
 
         async function runAnalysis() {
-            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading?";
+            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica?";
             addMessage(prompt, 'user');
             promptInput.value = "";
             sendBtn.disabled = true;
-            addMessage("Analizando imagen...", "ai");
+            addMessage("Analizando...", "ai");
 
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
@@ -74,30 +68,25 @@
             const base64Image = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
 
             try {
+                // Dirección actualizada a la versión estable (v1)
                 const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ]
-                        }]
+                        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
                     })
                 });
 
                 const data = await response.json();
                 if (data.error) {
-                    addMessage("Error de Google: " + data.error.message, "ai");
-                } else if (data.candidates && data.candidates[0].content) {
-                    addMessage(data.candidates[0].content.parts[0].text, "ai");
+                    addMessage("Error: " + data.error.message, "ai");
                 } else {
-                    addMessage("No se recibió una respuesta clara.", "ai");
+                    addMessage(data.candidates[0].content.parts[0].text, "ai");
                 }
             } catch (err) {
-                addMessage("Error de conexión. Revisa tu internet.", "ai");
+                addMessage("Fallo de conexión.", "ai");
             } finally {
                 sendBtn.disabled = false;
             }
