@@ -47,8 +47,8 @@
     <canvas id="snapshot"></canvas>
 
     <script>
-        // ==================== PEGA TU CLAVE AQUÍ ====================
-        const API_KEY = "AIzaSyCJ2CcSEP0yhEap4QEKLmUkC9Z9dU5AGj0";   // ←←← REEMPLAZA ESTO con tu clave real
+        // ==================== TU CLAVE AQUÍ ====================
+        const API_KEY = "AIzaSyCJ2CcSEP0yhEap4QEKLmUkC9Z9dU5AGj0";   // ← BORRA "AIzaSy" y pega tu clave completa aquí
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
@@ -78,9 +78,9 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        async function analyze(isDetailed) {
-            if (API_KEY === "AIzaSyCJ2CcSEP0yhEap4QEKLmUkC9Z9dU5AGj0") {
-                addMessage("❌ Primero reemplaza 'AIzaSyCJ2CcSEP0yhEap4QEKLmUkC9Z9dU5AGj0' con tu API Key real", "ai");
+        async function analyze() {
+            if (API_KEY.length < 30) {
+                addMessage("❌ La clave API no es válida. Pégala completa.", "ai");
                 return;
             }
 
@@ -91,7 +91,7 @@ RAZÓN: (máximo 15 palabras)`;
 
             addMessage("ANÁLISIS RÁPIDO", 'user');
             sendBtn.disabled = tradingBtn.disabled = true;
-            statusEl.textContent = "Enviando...";
+            statusEl.textContent = "Analizando...";
 
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
@@ -105,7 +105,7 @@ RAZÓN: (máximo 15 palabras)`;
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
+                        contents: [{ 
                             parts: [
                                 { text: prompt },
                                 { inline_data: { mime_type: "image/jpeg", data: base64 } }
@@ -123,18 +123,18 @@ RAZÓN: (máximo 15 palabras)`;
                     addMessage(data.candidates[0].content.parts[0].text, "ai");
                 }
             } catch (err) {
-                addMessage("❌ Error de conexión. Revisa tu API Key.", "ai");
+                addMessage("❌ Error de conexión. Revisa tu clave API.", "ai");
             }
 
             sendBtn.disabled = tradingBtn.disabled = false;
             statusEl.textContent = "✅ Listo";
         }
 
-        sendBtn.addEventListener('click', () => analyze(false));
-        tradingBtn.addEventListener('click', () => analyze(true));
+        sendBtn.addEventListener('click', analyze);
+        tradingBtn.addEventListener('click', analyze);
         clearBtn.addEventListener('click', () => chatLog.innerHTML = '');
 
         window.addEventListener('load', startCamera);
     </script>
 </body>
-</html>    
+</html>
