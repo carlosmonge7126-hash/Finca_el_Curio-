@@ -70,7 +70,10 @@
             const base64Image = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
 
             // Intentamos con la versión v1 que es la estándar actual
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+          // 1. Usaremos la versión v1beta
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
+
+// 2. Nota que añadimos "-latest" al final del nombre del modelo
 
             try {
                 const response = await fetch(url, {
