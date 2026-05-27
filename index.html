@@ -7,175 +7,113 @@
     <style>
         :root {
             --primary: #00ff88;
+            --accent: #ff8800;
             --bg: #000;
-            --panel: rgba(20, 20, 20, 0.95);
+            --panel: rgba(18, 18, 18, 0.97);
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * { box-sizing: border-box; margin:0; padding:0; }
         body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg); color: #fff; font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column;
         }
-
-        #camera-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            background: #000;
-        }
-
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-        }
+        #camera-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; background:#000; }
+        video { width:100%; height:100%; object-fit: cover; }
 
         #chat-log {
-            position: absolute;
-            top: 12px; left: 12px; right: 12px;
-            max-height: 45%;
-            overflow-y: auto;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
+            position: absolute; top:12px; left:12px; right:12px; bottom:140px;
+            overflow-y:auto; z-index:2; display:flex; flex-direction:column; gap:10px;
+            pointer-events:none; padding-right:8px;
         }
-
         .msg {
-            padding: 12px 16px;
-            border-radius: 12px;
-            max-width: 88%;
-            font-size: 15px;
-            line-height: 1.4;
-            backdrop-filter: blur(12px);
-            pointer-events: auto;
+            padding:13px 16px; border-radius:12px; max-width:90%; font-size:15px; line-height:1.45;
+            backdrop-filter: blur(12px); pointer-events:auto; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-
-        .user-msg {
-            background: rgba(0, 123, 255, 0.75);
-            align-self: flex-end;
-        }
-
-        .ai-msg {
-            background: rgba(15, 15, 15, 0.9);
-            align-self: flex-start;
-            border-left: 4px solid var(--primary);
-            color: #00ffaa;
+        .user-msg { background: rgba(0,123,255,0.78); align-self:flex-end; }
+        .ai-msg { 
+            background: rgba(15,15,15,0.92); align-self:flex-start; 
+            border-left:5px solid var(--primary); color:#00ffbb;
         }
 
         .controls {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            z-index: 3;
-            background: var(--panel);
-            padding: 16px 12px;
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
-            display: flex;
-            gap: 10px;
+            position: absolute; bottom:0; left:0; right:0; z-index:3; background:var(--panel);
+            padding:14px 12px; padding-bottom: max(14px, env(safe-area-inset-bottom));
+            display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #222;
         }
-
         input {
-            flex: 1;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: white;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 16px;
+            flex:1; background:#1a1a1a; border:1px solid #333; color:white; 
+            padding:14px 16px; border-radius:12px; font-size:16px; min-width:180px;
         }
-
         button {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
+            background:var(--primary); color:#000; border:none; padding:13px 18px;
+            border-radius:12px; font-weight:bold; cursor:pointer; white-space:nowrap;
         }
-
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        canvas { display: none; }
+        button.accent { background:var(--accent); }
+        button:disabled { opacity:0.55; cursor:not-allowed; }
+        canvas { display:none; }
 
         .status {
-            position: absolute;
-            top: 12px; right: 12px;
-            background: rgba(0,0,0,0.8);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 4;
+            position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.85);
+            padding:7px 14px; border-radius:30px; font-size:13px; z-index:4;
+        }
+        .header {
+            position:absolute; top:12px; left:12px; z-index:4; font-weight:bold; font-size:18px;
+            color:var(--primary); text-shadow: 0 0 10px rgba(0,255,136,0.5);
         }
     </style>
 </head>
 <body>
-    <div id="camera-container">
-        <video id="webcam" autoplay playsinline muted></video>
-    </div>
-    
-    <div class="status" id="status">Iniciando cámara...</div>
+    <div class="header">TRADER VISION PRO</div>
+    <div id="camera-container"><video id="webcam" autoplay playsinline muted></video></div>
+    <div class="status" id="status">Iniciando...</div>
     
     <div id="chat-log">
         <div class="msg ai-msg">
             <strong>IA Trader Vision Pro</strong><br>
-            Apunta a la gráfica y presiona ANALIZAR
+            Apunta a cualquier gráfica y selecciona modo de análisis
         </div>
     </div>
 
     <div class="controls">
-        <input type="text" id="user-prompt" placeholder="¿Qué ves en esta gráfica?">
+        <input type="text" id="user-prompt" placeholder="Escribe tu pregunta...">
         <button id="send-btn">ANALIZAR</button>
+        <button id="trading-btn" class="accent">TRADING PRO</button>
+        <button id="clear-btn">Limpiar</button>
+        <button id="save-btn">Guardar Análisis</button>
     </div>
 
     <canvas id="snapshot"></canvas>
 
     <script>
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ← Cambia esto por tu clave real
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";   // ← Pon tu clave aquí
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const promptInput = document.getElementById('user-prompt');
         const sendBtn = document.getElementById('send-btn');
+        const tradingBtn = document.getElementById('trading-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const saveBtn = document.getElementById('save-btn');
         const chatLog = document.getElementById('chat-log');
         const statusEl = document.getElementById('status');
 
         const MODELS = [
             "gemini-3.5-flash",
             "gemini-3.1-flash-lite",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite"
+            "gemini-3.1-pro-preview",
+            "gemini-2.5-flash"
         ];
 
         async function startCamera() {
-            statusEl.textContent = "Solicitando permisos de cámara...";
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: {ideal:1280}, height:{ideal:720} } 
                 });
                 video.srcObject = stream;
-                
-                video.onloadedmetadata = () => {
-                    statusEl.textContent = "✅ Cámara activa";
-                    statusEl.style.color = "#00ff88";
-                };
+                statusEl.textContent = "✅ Cámara activa";
+                statusEl.style.color = "#00ff88";
             } catch (err) {
-                console.error(err);
-                statusEl.textContent = "❌ Error cámara: " + err.message;
+                statusEl.textContent = "❌ Error cámara";
                 statusEl.style.color = "#ff4444";
-                addMessage("No se pudo acceder a la cámara. Asegúrate de permitir los permisos.", "ai");
             }
         }
 
@@ -189,69 +127,81 @@
 
         async function tryModel(modelName, base64Image, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
-            
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     contents: [{ 
-                        parts: [
-                            { text: prompt },
-                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                        ]
+                        parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image }}]
                     }],
-                    generationConfig: { temperature: 0.6, maxOutputTokens: 1000 }
+                    generationConfig: { temperature: 0.5, maxOutputTokens: 1500 }
                 })
             });
-
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             return data.candidates[0].content.parts[0].text;
         }
 
-        async function runAnalysis() {
-            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading? Analiza tendencia, soportes, resistencias y setups.";
-            
-            addMessage(prompt, 'user');
+        async function runAnalysis(isTradingMode = false) {
+            const userText = promptInput.value.trim();
+            const basePrompt = isTradingMode 
+                ? `Eres un trader profesional experimentado. Analiza esta gráfica con detalle técnico y dame:
+1. Tendencia general (alcista/bajista/lateral)
+2. Niveles clave (soporte y resistencia)
+3. Patrones detectados
+4. Recomendación clara: COMPRAR, VENDER o ESPERAR
+5. Razón principal y nivel de confianza (alto/medio/bajo)
+6. Sugerencia de Stop Loss y Take Profit aproximados`
+                : (userText || "Describe lo que ves en esta gráfica de trading.");
+
+            addMessage(userText || (isTradingMode ? "ANÁLISIS TRADING PRO" : basePrompt), 'user');
             promptInput.value = "";
-            sendBtn.disabled = true;
-            statusEl.textContent = "Capturando imagen...";
+            sendBtn.disabled = tradingBtn.disabled = true;
+            statusEl.textContent = "Analizando...";
 
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64Image = canvas.toDataURL('image/jpeg', 0.78).split(',')[1];
+            const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
             let success = false;
-
             for (const model of MODELS) {
                 try {
-                    statusEl.textContent = `Probando ${model}...`;
-                    const responseText = await tryModel(model, base64Image, prompt);
-                    addMessage(`<strong>[${model}]</strong><br>${responseText}`, "ai");
+                    statusEl.textContent = `Usando ${model}...`;
+                    const responseText = await tryModel(model, base64Image, basePrompt);
+                    addMessage(`<strong>[${model.toUpperCase()}]</strong><br>${responseText}`, "ai");
                     success = true;
                     break;
-                } catch (err) {
-                    console.warn(`Modelo ${model} falló:`, err.message);
+                } catch (e) {
+                    console.warn(`${model} falló`);
                 }
             }
 
-            if (!success) {
-                addMessage("Error: No se pudo conectar con la IA. Revisa tu API Key.", "ai");
-            }
+            if (!success) addMessage("❌ No se pudo conectar con la IA. Revisa tu API Key.", "ai");
 
-            sendBtn.disabled = false;
+            sendBtn.disabled = tradingBtn.disabled = false;
             statusEl.textContent = "✅ Cámara activa";
         }
 
         // Eventos
-        sendBtn.addEventListener('click', runAnalysis);
-        promptInput.addEventListener('keypress', e => { if (e.key === 'Enter') runAnalysis(); });
-
-        // Iniciar
-        window.addEventListener('load', () => {
-            startCamera();
+        sendBtn.addEventListener('click', () => runAnalysis(false));
+        tradingBtn.addEventListener('click', () => runAnalysis(true));
+        clearBtn.addEventListener('click', () => { chatLog.innerHTML = ''; });
+        saveBtn.addEventListener('click', () => {
+            const text = Array.from(chatLog.children)
+                .map(msg => msg.textContent)
+                .join('\n\n---\n\n');
+            const blob = new Blob([text], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Analisis_Trading_${new Date().toISOString().slice(0,16)}.txt`;
+            a.click();
         });
+
+        promptInput.addEventListener('keypress', e => { if (e.key === 'Enter') runAnalysis(false); });
+
+        window.addEventListener('load', startCamera);
     </script>
 </body>
 </html>
