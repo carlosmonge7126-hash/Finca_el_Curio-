@@ -30,7 +30,9 @@
     <canvas id="snapshot"></canvas>
 
     <script>
-        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego";
+        // ASEGÚRATE DE QUE ESTA CLAVE SEA LA NUEVA QUE CREASTE HOY
+        const API_KEY = "AIzaSyCvzHBFAa_flCedpCWko7vz6gOyr2bnego"; 
+        
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const promptInput = document.getElementById('user-prompt');
@@ -55,22 +57,22 @@
         }
 
         async function runAnalysis() {
-            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica?";
+            const prompt = promptInput.value.trim() || "¿Qué ves en esta gráfica de trading?";
             addMessage(prompt, 'user');
             promptInput.value = "";
             sendBtn.disabled = true;
-            addMessage("Analizando...", "ai");
+            addMessage("Consultando a la IA...", "ai");
 
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0);
-            const base64Image = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+            const base64Image = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
+
+            // Intentamos con la versión v1 que es la estándar actual
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
             try {
-                // Dirección actualizada a la versión estable (v1)
-               const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + API_KEY;
-                
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -80,13 +82,14 @@
                 });
 
                 const data = await response.json();
+                
                 if (data.error) {
-                    addMessage("Error: " + data.error.message, "ai");
+                    addMessage("Detalle: " + data.error.message, "ai");
                 } else {
                     addMessage(data.candidates[0].content.parts[0].text, "ai");
                 }
             } catch (err) {
-                addMessage("Fallo de conexión.", "ai");
+                addMessage("Error de conexión al servidor.", "ai");
             } finally {
                 sendBtn.disabled = false;
             }
