@@ -5,34 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TRADER VISION PRO</title>
     <style>
-        :root {
-            --primary: #00ff88;
-            --accent: #ff8800;
-            --bg: #000;
-            --panel: rgba(15,15,15,0.98);
-        }
+        :root { --primary: #00ff88; --accent: #ff8800; --bg: #000; --panel: rgba(15,15,15,0.98); }
         * { box-sizing: border-box; margin:0; padding:0; }
-        body {
-            background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif;
-            height: 100vh; width: 100vw; overflow: hidden;
-        }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; }
         #camera-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; background:#000; }
         video { width:100%; height:100%; object-fit: cover; }
 
-        #chat-log {
-            position: absolute; top:55px; left:12px; right:12px; bottom:130px;
-            overflow-y:auto; z-index:2; display:flex; flex-direction:column; gap:12px;
-            pointer-events:none;
-        }
-        .msg {
-            padding:12px 15px; border-radius:10px; max-width:92%; font-size:15.2px;
-            backdrop-filter: blur(10px); pointer-events:auto;
-        }
+        #chat-log { position: absolute; top:55px; left:12px; right:12px; bottom:130px; overflow-y:auto; z-index:2; display:flex; flex-direction:column; gap:12px; pointer-events:none; }
+        .msg { padding:12px 15px; border-radius:10px; max-width:92%; font-size:15.2px; backdrop-filter: blur(10px); pointer-events:auto; }
         .user-msg { background: rgba(0,123,255,0.75); align-self:flex-end; }
-        .ai-msg { 
-            background: rgba(20,20,20,0.92); align-self:flex-start; 
-            border-left:4px solid var(--primary);
-        }
+        .ai-msg { background: rgba(20,20,20,0.92); align-self:flex-start; border-left:4px solid var(--primary); }
 
         .decision-box {
             font-size: 24px; font-weight: bold; text-align: center; padding: 18px 12px;
@@ -42,25 +24,13 @@
         .sell { background: rgba(255,70,70,0.18); color:#ff5555; border-color:#ff5555; }
         .wait { background: rgba(255,180,0,0.18); color:#ffcc00; border-color:#ffcc00; }
 
-        .controls {
-            position: absolute; bottom:0; left:0; right:0; z-index:3; background:var(--panel);
-            padding:12px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #222;
-        }
-        input { 
-            flex:1; background:#1a1a1a; border:1px solid #333; color:white; 
-            padding:13px; border-radius:10px; font-size:15.5px; 
-        }
-        button {
-            background:var(--primary); color:#000; border:none; padding:13px 20px;
-            border-radius:10px; font-weight:bold; cursor:pointer;
-        }
+        .controls { position: absolute; bottom:0; left:0; right:0; z-index:3; background:var(--panel); padding:12px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #222; }
+        input { flex:1; background:#1a1a1a; border:1px solid #333; color:white; padding:13px; border-radius:10px; font-size:15.5px; }
+        button { background:var(--primary); color:#000; border:none; padding:13px 20px; border-radius:10px; font-weight:bold; cursor:pointer; }
         button.accent { background:var(--accent); }
         button:disabled { opacity:0.5; cursor:not-allowed; }
 
-        .status, .header {
-            position:absolute; top:12px; background:rgba(0,0,0,0.8); padding:6px 12px;
-            border-radius:30px; font-size:13px; z-index:4;
-        }
+        .status, .header { position:absolute; top:12px; background:rgba(0,0,0,0.8); padding:6px 12px; border-radius:30px; font-size:13px; z-index:4; }
         .header { left:12px; color:var(--primary); font-weight:bold; }
         .status { right:12px; }
         canvas { display:none; }
@@ -73,14 +43,14 @@
     
     <div id="chat-log">
         <div class="msg ai-msg">
-            Apunta a la gráfica y analiza rápido
+            Apunta a la gráfica y presiona analizar
         </div>
     </div>
 
     <div class="controls">
         <input type="text" id="user-prompt" placeholder="Pregunta adicional...">
-        <button id="send-btn">RÁPIDO</button>
-        <button id="trading-btn" class="accent">DETALLADO</button>
+        <button id="send-btn">ANÁLISIS RÁPIDO</button>
+        <button id="trading-btn" class="accent">ANÁLISIS DETALLADO</button>
         <button id="clear-btn">Limpiar</button>
     </div>
 
@@ -102,9 +72,7 @@
 
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" } 
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
                 statusEl.textContent = "✅ Listo";
                 statusEl.style.color = "#00ff88";
@@ -124,17 +92,14 @@
         async function analyze(isDetailed) {
             const userText = promptInput.value.trim();
             
-            const prompt = isDetailed ? 
-                `Analiza esta gráfica de trading de forma rápida y decisiva. Responde EXACTAMENTE así:
+            const basePrompt = `Eres un trader profesional. Analiza esta gráfica técnica rápidamente.
+Devuelve siempre este formato exacto y conciso:
 
 DECISIÓN: COMPRAR / VENDER / NO INVERTIR (XX%)
-RAZÓN: (máximo 12 palabras)
-ANÁLISIS BREVE: (2-3 líneas máximo)` 
-                : 
-                `Analiza esta gráfica y responde SOLO con este formato exacto:
+RAZÓN: (máximo 15 palabras)
+CONFIANZA: Alto / Medio / Bajo
 
-DECISIÓN: COMPRAR / VENDER / NO INVERTIR (XX%)
-RAZÓN: (máximo 12 palabras)`;
+${isDetailed ? 'Análisis breve adicional (2 líneas máximo):' : ''}`;
 
             addMessage(userText || (isDetailed ? "ANÁLISIS DETALLADO" : "ANÁLISIS RÁPIDO"), 'user');
             promptInput.value = "";
@@ -144,7 +109,7 @@ RAZÓN: (máximo 12 palabras)`;
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64 = canvas.toDataURL('image/jpeg', 0.78).split(',')[1];
+            const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
             let success = false;
             for (const model of MODELS) {
@@ -156,19 +121,18 @@ RAZÓN: (máximo 12 palabras)`;
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64 }}]}],
-                            generationConfig: { temperature: 0.3, maxOutputTokens: 700 }
+                            contents: [{ parts: [{ text: basePrompt }, { inline_data: { mime_type: "image/jpeg", data: base64 }}]}],
+                            generationConfig: { temperature: 0.35, maxOutputTokens: 650 }
                         })
                     });
 
                     const data = await res.json();
                     if (data.error) throw new Error(data.error.message);
                     
-                    const response = data.candidates[0].content.parts[0].text;
-                    addMessage(response, "ai");
+                    addMessage(data.candidates[0].content.parts[0].text, "ai");
                     success = true;
                     break;
-                } catch (e) {}
+                } catch (e) { console.warn(e); }
             }
 
             if (!success) addMessage("❌ Error de conexión", "ai");
