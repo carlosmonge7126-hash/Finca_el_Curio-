@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>TRADER VISION PRO | IA Multi-Estrategia</title>
+    <title>TRADER VISION | ANÁLISIS EN TIEMPO REAL</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,9 +16,8 @@
             --primary: #00f5a0;
             --accent: #ffb347;
             --danger: #ff4d4d;
-            --warning: #ffcc00;
             --bg-dark: #0a0c0f;
-            --panel-dark: rgba(10, 12, 15, 0.98);
+            --panel-dark: rgba(10, 12, 15, 0.95);
             --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', system-ui, sans-serif;
         }
 
@@ -29,50 +28,17 @@
             min-height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            position: relative;
         }
 
-        .main-container {
-            position: relative;
-            min-height: 100vh;
-            padding-bottom: 200px;
-        }
-
-        #camera-container {
-            position: relative;
-            width: 100%;
-            height: 45vh;
-            min-height: 280px;
-            background: #000;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gradient-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-            pointer-events: none;
-            z-index: 2;
-        }
-
+        /* Header fijo */
         .header {
-            position: sticky;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(12px);
-            padding: 12px 18px;
+            padding: 10px 16px;
             z-index: 20;
             display: flex;
             justify-content: space-between;
@@ -82,990 +48,671 @@
 
         .header-title {
             font-weight: 800;
-            font-size: 1rem;
-            letter-spacing: -0.3px;
+            font-size: 0.95rem;
         }
 
         .header-title span {
             color: var(--primary);
-            text-shadow: 0 0 6px rgba(0,245,160,0.4);
         }
 
-        .badge-offline {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            padding: 5px 12px;
-            border-radius: 60px;
+        .badge {
+            background: rgba(0,245,160,0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 0.65rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
             color: var(--primary);
         }
 
-        .led {
-            width: 8px;
-            height: 8px;
-            border-radius: 10px;
-            background-color: var(--primary);
-            box-shadow: 0 0 8px var(--primary);
-            animation: pulse 1.2s infinite;
+        /* Contenedor de cámara */
+        #camera-container {
+            position: relative;
+            width: 100%;
+            height: 40vh;
+            min-height: 280px;
+            background: #000;
+            overflow: hidden;
+            margin-top: 48px;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.4; transform: scale(0.9);}
-            100% { opacity: 1; transform: scale(1.2);}
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
+        /* SEÑAL EN VIVO - GRANDE Y CLARA */
+        .live-signal {
+            position: fixed;
+            top: 60px;
+            right: 12px;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(16px);
+            padding: 8px 16px;
+            border-radius: 40px;
+            z-index: 25;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(0,245,160,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .signal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulseSignal 1.5s infinite;
+        }
+
+        .signal-dot.buy { background: #00f5a0; box-shadow: 0 0 10px #00f5a0; }
+        .signal-dot.sell { background: #ff4d4d; box-shadow: 0 0 10px #ff4d4d; }
+        .signal-dot.neutral { background: #ffb347; box-shadow: 0 0 10px #ffb347; }
+
+        .signal-text {
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .signal-text.buy { color: #00f5a0; }
+        .signal-text.sell { color: #ff4d4d; }
+        .signal-text.neutral { color: #ffb347; }
+
+        .signal-confidence {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        /* Panel de métricas en tiempo real */
+        .metrics-panel {
+            position: fixed;
+            top: 60px;
+            left: 12px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            padding: 8px 12px;
+            border-radius: 16px;
+            z-index: 25;
+            font-size: 0.7rem;
+            min-width: 120px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .metrics-panel div {
+            margin: 4px 0;
+        }
+
+        /* Historial de señales */
         #chat-log {
             padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            min-height: 300px;
+            gap: 10px;
+            max-height: 42vh;
+            overflow-y: auto;
+            margin-bottom: 80px;
         }
 
         .msg {
-            padding: 12px 16px;
-            border-radius: 20px;
+            padding: 10px 14px;
+            border-radius: 16px;
             max-width: 95%;
-            font-size: 0.9rem;
-            line-height: 1.45;
-            backdrop-filter: blur(8px);
-            word-break: break-word;
-            animation: fadeIn 0.3s ease;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            animation: fadeIn 0.2s ease;
         }
 
+        .signal-msg {
+            border-left: 3px solid;
+            background: rgba(18, 22, 28, 0.95);
+        }
+
+        .signal-msg.buy { border-left-color: #00f5a0; }
+        .signal-msg.sell { border-left-color: #ff4d4d; }
+        .signal-msg.neutral { border-left-color: #ffb347; }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .user-msg {
-            background: rgba(0, 110, 255, 0.85);
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-            color: white;
-            font-weight: 500;
-        }
-
-        .ai-msg {
-            background: rgba(18, 22, 28, 0.96);
-            align-self: flex-start;
-            border-left: 3px solid var(--primary);
-            color: #f0f3fa;
-        }
-
-        .controls {
+        /* Botones flotantes */
+        .floating-buttons {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 30;
             background: var(--panel-dark);
             backdrop-filter: blur(20px);
             padding: 12px 16px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-top: 1px solid rgba(0,245,160,0.25);
-            box-shadow: 0 -8px 25px rgba(0,0,0,0.6);
-        }
-
-        input {
-            flex: 2;
-            min-width: 120px;
-            background: #1e1f24;
-            border: 1px solid #2f313a;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 44px;
-            font-size: 0.85rem;
-            outline: none;
-            transition: all 0.2s;
-            font-family: var(--font-sans);
-        }
-        
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(0,245,160,0.2);
+            gap: 12px;
+            z-index: 30;
+            border-top: 1px solid rgba(0,245,160,0.2);
         }
 
         button {
-            background: rgba(0,245,160,0.12);
-            backdrop-filter: blur(4px);
+            flex: 1;
+            background: rgba(0,245,160,0.1);
             border: 1px solid var(--primary);
             color: var(--primary);
-            padding: 10px 18px;
+            padding: 12px;
             border-radius: 44px;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: 0.2s;
-            font-family: var(--font-sans);
-            white-space: nowrap;
         }
 
-        button.accent {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #131313;
-            box-shadow: 0 2px 12px rgba(255,180,70,0.3);
+        button.danger {
+            border-color: #ff4d4d;
+            color: #ff4d4d;
         }
 
         button:active {
-            transform: scale(0.96);
+            transform: scale(0.97);
         }
 
-        button:disabled {
-            opacity: 0.5;
-            transform: none;
-            cursor: not-allowed;
+        .status-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            z-index: 25;
         }
 
         canvas {
             display: none;
         }
 
-        .confidence-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        
-        .confidence-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s ease;
-            border-radius: 3px;
-        }
-        
-        .signal-strength {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        
-        .strength-strong { background: #00f5a0; color: #000; }
-        .strength-moderate { background: #ffb347; color: #000; }
-        .strength-weak { background: #ff6666; color: #fff; }
-
-        .footer-note {
-            text-align: center;
-            padding: 12px;
-            color: #6c6f78;
-            font-size: 0.7rem;
-            margin-top: 10px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 5px;
-        }
-
         @media (max-width: 768px) {
-            .header { padding: 10px 16px; }
-            .header-title { font-size: 0.95rem; }
-            #camera-container { height: 40vh; min-height: 250px; }
-            .controls { padding: 12px; gap: 8px; }
-            button { padding: 10px 14px; font-size: 0.75rem; }
-            .msg { max-width: 95%; font-size: 0.85rem; }
-        }
-
-        @media (max-width: 480px) {
-            .controls { flex-wrap: wrap; }
-            button { flex: 1; min-width: auto; white-space: normal; }
-            input { width: 100%; flex: auto; }
+            .metrics-panel { display: none; }
+            .live-signal { top: 55px; right: 8px; padding: 6px 12px; }
+            .signal-text { font-size: 0.85rem; }
+            #camera-container { height: 38vh; margin-top: 48px; }
+            #chat-log { max-height: 45vh; }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="header">
-            <div class="header-title">
-                🦅 <span>TRADER VISION AI PRO</span>
-            </div>
-            <div class="badge-offline">
-                <span class="led"></span>
-                <span>🔬 MULTI-ESTRATEGIA</span>
-            </div>
-        </div>
 
-        <div id="camera-container">
-            <video id="webcam" autoplay playsinline muted></video>
-        </div>
-        <div class="gradient-overlay"></div>
-
-        <div id="chat-log">
-            <div class="msg ai-msg">
-                🚀 <strong>IA TRADING PROFESIONAL ACTIVADA</strong><br><br>
-                ✅ <strong>6 Sistemas de Análisis:</strong><br>
-                • 📊 Análisis Técnico (Velas Japonesas)<br>
-                • 🎯 Smart Money Concepts (SMC)<br>
-                • 📈 Indicadores de Momentum<br>
-                • 🔍 Detección de Soportes/Resistencias<br>
-                • ⚡ Análisis de Volatilidad<br>
-                • 🧠 Machine Learning Heurístico<br><br>
-                📸 <strong>Apunta la cámara a cualquier gráfica</strong> y obtén análisis profesional
-            </div>
-        </div>
-
-        <div class="footer-note">
-            🧠 IA Multi-Estrategia | 6 sistemas combinados | Precisión mejorada
-        </div>
+<div class="header">
+    <div class="header-title">
+        📹 <span>TRADER VISION RT</span>
     </div>
-
-    <div class="controls">
-        <input type="text" id="user-prompt" placeholder="📝 Pregunta (ej: stop loss, targets, riesgo...)" autocomplete="off">
-        <button id="send-btn">⚡ RÁPIDO</button>
-        <button id="trading-btn" class="accent">🎯 PRO +</button>
-        <button id="clear-btn">🗑️ LIMPIAR</button>
+    <div class="badge">
+        🟢 EN VIVO • 24/7
     </div>
+</div>
 
-    <canvas id="snapshot"></canvas>
+<div id="camera-container">
+    <video id="webcam" autoplay playsinline muted></video>
+</div>
 
-    <script>
-        (function(){
-            // ========== IA PROFESIONAL DE TRADING ==========
-            class ProfessionalTradingAI {
-                constructor() {
-                    this.version = "3.0 - Multi-Estrategia";
-                    this.indicators = {
-                        rsi: { value: 0, signal: "neutral" },
-                        momentum: { value: 0, strength: 0 },
-                        volatility: { value: 0, level: "normal" }
-                    };
+<!-- Señal en tiempo real grande -->
+<div class="live-signal" id="liveSignal">
+    <div class="signal-dot neutral" id="signalDot"></div>
+    <div>
+        <div class="signal-text neutral" id="signalText">ESPERANDO...</div>
+        <div class="signal-confidence" id="signalConfidence">---</div>
+    </div>
+</div>
+
+<!-- Panel de métricas (opcional) -->
+<div class="metrics-panel" id="metricsPanel">
+    <div>📊 Tendencia: <span id="trendValue">---</span></div>
+    <div>⚡ Momentum: <span id="momentumValue">---</span></div>
+    <div>🎯 Confianza: <span id="confidenceValue">---</span></div>
+</div>
+
+<!-- Historial de señales -->
+<div id="chat-log">
+    <div class="msg signal-msg neutral">
+        🤖 <strong>ANÁLISIS EN TIEMPO REAL ACTIVADO</strong><br>
+        ✅ La IA analiza CADA SEGUNDO lo que ves<br>
+        📊 Las señales aparecen automáticamente<br>
+        🎯 COMPRAR 🟢 / VENDER 🔴 / NEUTRAL 🟠
+    </div>
+</div>
+
+<div class="floating-buttons">
+    <button id="clearBtn" class="danger">🗑️ LIMPIAR</button>
+</div>
+<div class="status-indicator" id="statusIndicator">
+    📹 Inicializando...
+</div>
+
+<canvas id="snapshot"></canvas>
+
+<script>
+    (function(){
+        // ========== ANALIZADOR EN TIEMPO REAL ==========
+        class RealTimeTradingAI {
+            constructor() {
+                this.frameHistory = [];     // Almacena últimos 30 frames (~6 segundos)
+                this.signals = [];
+                this.maxHistory = 30;       // 30 frames = ~6 segundos a 5fps
+                this.lastSignal = null;
+                this.lastSignalTime = 0;
+                this.signalCooldown = 3000; // No repetir misma señal cada 3 segundos
+            }
+            
+            // Analizar un frame y actualizar historial
+            analyzeFrame(imageData, width, height) {
+                // Extraer características del frame
+                const features = this.extractFeatures(imageData, width, height);
+                
+                // Agregar al historial
+                this.frameHistory.push({
+                    timestamp: Date.now(),
+                    ...features
+                });
+                
+                // Mantener solo últimos N frames
+                if (this.frameHistory.length > this.maxHistory) {
+                    this.frameHistory.shift();
                 }
                 
-                // Análisis principal con múltiples sistemas
-                async analyzeImage(canvas, userQuestion = "") {
-                    const ctx = canvas.getContext('2d');
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // 1. Análisis de Velas Japonesas (Price Action)
-                    const candlestick = this.analyzeCandlestickPatterns(imageData, canvas.width, canvas.height);
-                    
-                    // 2. Smart Money Concepts (SMC) - Liquidez y zonas institucionales
-                    const smcAnalysis = this.analyzeSmartMoney(imageData, canvas.width, canvas.height);
-                    
-                    // 3. Indicadores Técnicos (RSI, Momentum, Volatilidad)
-                    const technicalIndicators = this.calculateIndicators(imageData, canvas.width);
-                    
-                    // 4. Estructura de Mercado (Tendencias)
-                    const marketStructure = this.analyzeMarketStructure(imageData, canvas.width);
-                    
-                    // 5. Soporte/Resistencia Dinámicos
-                    const keyLevels = this.findDynamicLevels(imageData, canvas.height);
-                    
-                    // 6. Volumen y Liquidez
-                    const liquidity = this.analyzeLiquidity(imageData);
-                    
-                    // === COMBINAR TODOS LOS SISTEMAS ===
-                    const combinedSignal = this.combineSignals(
-                        candlestick, smcAnalysis, technicalIndicators, 
-                        marketStructure, keyLevels, liquidity
-                    );
-                    
-                    // === GENERAR ESTRATEGIA COMPLETA ===
-                    const strategy = this.generateCompleteStrategy(combinedSignal, keyLevels, technicalIndicators);
-                    
-                    // === RESPUESTA A PREGUNTAS ESPECÍFICAS ===
-                    let userResponse = "";
-                    if(userQuestion && userQuestion.trim().length > 0) {
-                        userResponse = this.answerProfessionalQuestion(userQuestion, strategy, combinedSignal, keyLevels);
-                    }
-                    
-                    return { signal: combinedSignal, strategy, userResponse, smcAnalysis, technicalIndicators };
+                // Si tenemos suficiente historial, calcular señal
+                if (this.frameHistory.length >= 10) {
+                    return this.calculateRealTimeSignal();
                 }
                 
-                // 1. Análisis avanzado de patrones de velas
-                analyzeCandlestickPatterns(imageData, width, height) {
-                    let patterns = [];
-                    let bullishStrength = 0;
-                    let bearishStrength = 0;
-                    
-                    // Detectar patrones específicos
-                    const patternData = this.detectAdvancedPatterns(imageData, width, height);
-                    
-                    if(patternData.engulfing) patterns.push("📊 Engulfing detectado");
-                    if(patternData.hammer) { patterns.push("🔨 Martillo (posible reversión alcista)"); bullishStrength += 25; }
-                    if(patternData.shootingStar) { patterns.push("⭐ Estrella fugaz (reversión bajista)"); bearishStrength += 25; }
-                    if(patternData.doji) patterns.push("⚖️ Doji (indecisión del mercado)");
-                    if(patternData.morningStar) { patterns.push("🌅 Estrella matutina (fuerte señal alcista)"); bullishStrength += 40; }
-                    
-                    return {
-                        patterns: patterns,
-                        bullishStrength: Math.min(100, bullishStrength),
-                        bearishStrength: Math.min(100, bearishStrength),
-                        primaryPattern: patternData.primary || "Rango normal"
-                    };
-                }
+                return null;
+            }
+            
+            extractFeatures(imageData, width, height) {
+                let greenIntensity = 0;
+                let redIntensity = 0;
+                let blueIntensity = 0;
+                let samples = 0;
+                let totalBrightness = 0;
+                let brightnessSamples = 0;
                 
-                detectAdvancedPatterns(imageData, width, height) {
-                    const midY = height / 2;
-                    let upperWick = 0, lowerWick = 0, body = 0;
-                    let samples = 0;
-                    
-                    for(let x = 0; x < width; x += Math.floor(width/30)) {
-                        for(let yOff = -20; yOff <= 20; yOff++) {
-                            const y = midY + yOff;
-                            if(y >= 0 && y < height) {
-                                const idx = (Math.floor(y) * width + x) * 4;
-                                if(idx < imageData.data.length) {
-                                    const brightness = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                    const relativePos = yOff / 20;
-                                    if(relativePos < -0.7) upperWick += brightness;
-                                    else if(relativePos > 0.7) lowerWick += brightness;
-                                    else body += brightness;
-                                    samples++;
-                                }
-                            }
-                        }
-                    }
-                    
-                    upperWick /= samples;
-                    lowerWick /= samples;
-                    body /= samples;
-                    
-                    const bodyRatio = body / (upperWick + lowerWick + 1);
-                    const upperWickRatio = upperWick / (body + 1);
-                    const lowerWickRatio = lowerWick / (body + 1);
-                    
-                    let engulfing = upperWickRatio > 2 && lowerWickRatio > 2;
-                    let hammer = lowerWickRatio > 2 && upperWickRatio < 0.5;
-                    let shootingStar = upperWickRatio > 2 && lowerWickRatio < 0.5;
-                    let doji = bodyRatio < 0.1;
-                    let morningStar = hammer && bodyRatio < 0.3;
-                    
-                    let primary = "normal";
-                    if(hammer) primary = "hammer";
-                    else if(shootingStar) primary = "shootingStar";
-                    else if(doji) primary = "doji";
-                    else if(engulfing) primary = "engulfing";
-                    
-                    return { engulfing, hammer, shootingStar, doji, morningStar, primary };
-                }
-                
-                // 2. Smart Money Concepts (SMC)
-                analyzeSmartMoney(imageData, width, height) {
-                    const zones = this.findLiquidityZones(imageData, height);
-                    const imbalance = this.detectImbalance(imageData, width);
-                    const orderBlock = this.detectOrderBlocks(imageData, width);
-                    
-                    let smcScore = 0;
-                    let reasons = [];
-                    
-                    if(zones.liquidityHigh) {
-                        smcScore += 20;
-                        reasons.push("🏦 Zona de alta liquidez institucional");
-                    }
-                    if(imbalance.fvg) {
-                        smcScore += (imbalance.strength > 0.7 ? 25 : 15);
-                        reasons.push(`⚡ Fair Value Gap detectado (${imbalance.strength > 0.7 ? "fuerte" : "moderado"})`);
-                    }
-                    if(orderBlock.bullish) {
-                        smcScore += 30;
-                        reasons.push("📈 Order Block alcista identificado");
-                    } else if(orderBlock.bearish) {
-                        smcScore -= 30;
-                        reasons.push("📉 Order Block bajista identificado");
-                    }
-                    
-                    return {
-                        score: smcScore,
-                        reasons: reasons,
-                        liquidityZones: zones,
-                        fairValueGap: imbalance.fvg,
-                        orderBlock: orderBlock
-                    };
-                }
-                
-                findLiquidityZones(imageData, height) {
-                    const zoneHeight = Math.floor(height / 6);
-                    let zones = [];
-                    
-                    for(let z = 0; z < 6; z++) {
-                        const startY = z * zoneHeight;
-                        let intensity = 0;
-                        let count = 0;
-                        
-                        for(let y = startY; y < startY + zoneHeight && y < height; y += 3) {
-                            for(let x = 0; x < 100; x += 5) {
-                                const idx = (y * 100 + x) * 4;
-                                if(idx < imageData.data.length) {
-                                    intensity += (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                    count++;
-                                }
-                            }
-                        }
-                        
-                        const avgIntensity = count > 0 ? intensity / count : 0;
-                        zones.push({ zone: z + 1, intensity: avgIntensity });
-                    }
-                    
-                    const highLiquidityZones = zones.filter(z => z.intensity > 180);
-                    return {
-                        liquidityHigh: highLiquidityZones.length >= 2,
-                        zones: highLiquidityZones
-                    };
-                }
-                
-                detectImbalance(imageData, width) {
-                    let leftThird = 0, centerThird = 0, rightThird = 0;
-                    let samples = 0;
-                    
-                    for(let y = 0; y < imageData.height; y += 10) {
-                        for(let x = 0; x < width; x += 10) {
-                            const idx = (y * width + x) * 4;
-                            if(idx < imageData.data.length) {
-                                const brightness = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                if(x < width/3) leftThird += brightness;
-                                else if(x < 2*width/3) centerThird += brightness;
-                                else rightThird += brightness;
-                                samples++;
-                            }
-                        }
-                    }
-                    
-                    leftThird /= samples;
-                    centerThird /= samples;
-                    rightThird /= samples;
-                    
-                    const maxDiff = Math.max(Math.abs(leftThird - centerThird), Math.abs(centerThird - rightThird));
-                    const strength = Math.min(1, maxDiff / 100);
-                    
-                    return {
-                        fvg: maxDiff > 30,
-                        strength: strength,
-                        direction: rightThird > leftThird ? "bullish" : "bearish"
-                    };
-                }
-                
-                detectOrderBlocks(imageData, width) {
-                    let bullishBlocks = 0;
-                    let bearishBlocks = 0;
-                    
-                    for(let x = 0; x < width; x += Math.floor(width/15)) {
-                        const idx = (Math.floor(imageData.height/2) * width + x) * 4;
-                        if(idx < imageData.data.length) {
+                // Muestreo inteligente para rendimiento
+                const step = 15;
+                for(let y = 0; y < height; y += step) {
+                    for(let x = 0; x < width; x += step) {
+                        const idx = (y * width + x) * 4;
+                        if(idx + 2 < imageData.data.length) {
                             const r = imageData.data[idx];
                             const g = imageData.data[idx+1];
-                            if(g > r && g > 120) bullishBlocks++;
-                            if(r > g && r > 120) bearishBlocks++;
-                        }
-                    }
-                    
-                    return {
-                        bullish: bullishBlocks > bearishBlocks + 3,
-                        bearish: bearishBlocks > bullishBlocks + 3,
-                        strength: Math.abs(bullishBlocks - bearishBlocks) / 10
-                    };
-                }
-                
-                // 3. Indicadores Técnicos
-                calculateIndicators(imageData, width) {
-                    // RSI simplificado basado en cambios de brillo
-                    let gains = 0, losses = 0;
-                    let prevBrightness = 0;
-                    let samples = 0;
-                    
-                    for(let y = 0; y < imageData.height; y += 20) {
-                        for(let x = 0; x < width; x += 20) {
-                            const idx = (y * width + x) * 4;
-                            if(idx < imageData.data.length) {
-                                const brightness = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                if(samples > 0) {
-                                    const change = brightness - prevBrightness;
-                                    if(change > 0) gains += change;
-                                    else losses += Math.abs(change);
-                                }
-                                prevBrightness = brightness;
+                            const b = imageData.data[idx+2];
+                            const brightness = (r + g + b) / 3;
+                            totalBrightness += brightness;
+                            brightnessSamples++;
+                            
+                            // Detectar velas según colores típicos de trading
+                            // Verde (bullish): g > r y g > 80
+                            if(g > r && g > b && g > 70) {
+                                greenIntensity += (g - Math.max(r, b)) / 255;
+                                samples++;
+                            }
+                            // Rojo (bearish): r > g y r > 70
+                            else if(r > g && r > b && r > 70) {
+                                redIntensity += (r - Math.max(g, b)) / 255;
+                                samples++;
+                            }
+                            // Azul/otros
+                            else if(b > r && b > g && b > 70) {
+                                blueIntensity += (b - Math.max(r, g)) / 255;
                                 samples++;
                             }
                         }
                     }
-                    
-                    const rs = (gains / (samples || 1)) / ((losses / (samples || 1)) + 0.01);
-                    const rsi = Math.min(100, Math.max(0, 100 - (100 / (1 + rs))));
-                    
-                    // Momentum
-                    const momentum = this.calculateMomentumAdvanced(imageData, width);
-                    
-                    // Volatilidad
-                    const volatility = this.calculateVolatility(imageData);
-                    
-                    let rsiSignal = "neutral";
-                    if(rsi > 70) rsiSignal = "sobrecompra";
-                    else if(rsi < 30) rsiSignal = "sobreventa";
-                    
-                    return {
-                        rsi: { value: Math.floor(rsi), signal: rsiSignal },
-                        momentum: { value: momentum.value, direction: momentum.direction, strength: momentum.strength },
-                        volatility: { value: volatility.value, level: volatility.level }
-                    };
                 }
                 
-                calculateMomentumAdvanced(imageData, width) {
-                    let leftBrightness = 0, rightBrightness = 0;
-                    let leftCount = 0, rightCount = 0;
-                    
-                    for(let y = 0; y < imageData.height; y += 8) {
-                        for(let x = 0; x < width; x += 8) {
-                            const idx = (y * width + x) * 4;
-                            if(idx < imageData.data.length) {
-                                const brightness = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                if(x < width/2) {
-                                    leftBrightness += brightness;
-                                    leftCount++;
-                                } else {
-                                    rightBrightness += brightness;
-                                    rightCount++;
-                                }
-                            }
-                        }
+                const avgBrightness = brightnessSamples > 0 ? totalBrightness / brightnessSamples : 128;
+                const greenScore = samples > 0 ? greenIntensity / samples : 0.5;
+                const redScore = samples > 0 ? redIntensity / samples : 0.5;
+                const blueScore = samples > 0 ? blueIntensity / samples : 0.3;
+                
+                // Score neto: positivo = alcista, negativo = bajista
+                let netScore = greenScore - redScore;
+                
+                // Ajuste por brillo (velas más brillantes = más movimiento)
+                const brightnessFactor = (avgBrightness - 100) / 100;
+                netScore = netScore + (brightnessFactor * 0.1);
+                
+                return {
+                    green: greenScore,
+                    red: redScore,
+                    blue: blueScore,
+                    netScore: netScore,
+                    brightness: avgBrightness,
+                    timestamp: Date.now()
+                };
+            }
+            
+            calculateRealTimeSignal() {
+                if (this.frameHistory.length < 10) return null;
+                
+                const n = this.frameHistory.length;
+                const scores = this.frameHistory.map(f => f.netScore);
+                
+                // 1. Tendencia actual (últimos 5 frames vs primeros 5)
+                const recentScores = scores.slice(-8);
+                const olderScores = scores.slice(0, 8);
+                const recentAvg = this.average(recentScores);
+                const olderAvg = this.average(olderScores);
+                const trend = recentAvg - olderAvg;
+                
+                // 2. Momentum instantáneo (cambio entre últimos frames)
+                const lastScore = scores[scores.length - 1];
+                const prevScore = scores[scores.length - 2] || lastScore;
+                const instantMomentum = lastScore - prevScore;
+                
+                // 3. Tendencia general (regresión simple)
+                let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                for(let i = 0; i < n; i++) {
+                    sumX += i;
+                    sumY += scores[i];
+                    sumXY += i * scores[i];
+                    sumX2 += i * i;
+                }
+                const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                
+                // 4. Volatilidad (desviación estándar)
+                const avgScore = this.average(scores);
+                const variance = scores.reduce((sum, s) => sum + Math.pow(s - avgScore, 2), 0) / n;
+                const volatility = Math.sqrt(variance);
+                
+                // 5. Consistencia (qué porcentaje de frames siguen la tendencia)
+                let consistentCount = 0;
+                for(let i = 1; i < n; i++) {
+                    if((slope > 0 && scores[i] > scores[i-1]) || (slope < 0 && scores[i] < scores[i-1])) {
+                        consistentCount++;
                     }
-                    
-                    const leftAvg = leftCount > 0 ? leftBrightness / leftCount : 0;
-                    const rightAvg = rightCount > 0 ? rightBrightness / rightCount : 0;
-                    const momentumValue = (rightAvg - leftAvg) / 127.5;
-                    
-                    return {
-                        value: momentumValue,
-                        direction: momentumValue > 0.2 ? "bullish" : momentumValue < -0.2 ? "bearish" : "neutral",
-                        strength: Math.min(1, Math.abs(momentumValue))
-                    };
+                }
+                const consistency = consistentCount / (n - 1);
+                
+                // 6. DECISIÓN EN TIEMPO REAL
+                let decision = "NEUTRAL";
+                let confidence = 50;
+                let reasons = [];
+                
+                // Factor tendencia
+                if (trend > 0.08) {
+                    confidence += 20;
+                    reasons.push(`tendencia alcista`);
+                } else if (trend < -0.08) {
+                    confidence -= 20;
+                    reasons.push(`tendencia bajista`);
+                } else if (trend > 0.03) {
+                    confidence += 10;
+                    reasons.push(`leve tendencia alcista`);
+                } else if (trend < -0.03) {
+                    confidence -= 10;
+                    reasons.push(`leve tendencia bajista`);
                 }
                 
-                calculateVolatility(imageData) {
-                    let brightnessValues = [];
-                    let sum = 0;
-                    
-                    for(let i = 0; i < imageData.data.length; i += 100) {
-                        const brightness = (imageData.data[i] + imageData.data[i+1] + imageData.data[i+2]) / 3;
-                        brightnessValues.push(brightness);
-                        sum += brightness;
-                    }
-                    
-                    const mean = sum / brightnessValues.length;
-                    let variance = 0;
-                    for(let val of brightnessValues) {
-                        variance += Math.pow(val - mean, 2);
-                    }
-                    variance /= brightnessValues.length;
-                    const stdDev = Math.sqrt(variance);
-                    
-                    let level = "normal";
-                    if(stdDev > 45) level = "alta";
-                    else if(stdDev < 20) level = "baja";
-                    
-                    return { value: Math.floor(stdDev), level: level };
+                // Factor momentum
+                if (instantMomentum > 0.05) {
+                    confidence += 15;
+                    reasons.push(`momentum positivo`);
+                } else if (instantMomentum < -0.05) {
+                    confidence -= 15;
+                    reasons.push(`momentum negativo`);
                 }
                 
-                // 4. Estructura de Mercado
-                analyzeMarketStructure(imageData, width) {
-                    let highs = [];
-                    let lows = [];
-                    
-                    for(let x = 0; x < width; x += Math.floor(width/20)) {
-                        let maxBrightness = 0;
-                        let minBrightness = 255;
-                        
-                        for(let y = 0; y < imageData.height; y += 10) {
-                            const idx = (y * width + x) * 4;
-                            if(idx < imageData.data.length) {
-                                const brightness = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                maxBrightness = Math.max(maxBrightness, brightness);
-                                minBrightness = Math.min(minBrightness, brightness);
-                            }
-                        }
-                        highs.push(maxBrightness);
-                        lows.push(minBrightness);
-                    }
-                    
-                    const trend = this.detectTrend(highs, lows);
-                    
-                    return {
-                        trend: trend.direction,
-                        strength: trend.strength,
-                        structure: trend.structure
-                    };
+                // Factor pendiente (slope)
+                if (slope > 0.02) {
+                    confidence += 10;
+                } else if (slope < -0.02) {
+                    confidence -= 10;
                 }
                 
-                detectTrend(highs, lows) {
-                    let higherHighs = 0;
-                    let lowerLows = 0;
-                    
-                    for(let i = 1; i < highs.length; i++) {
-                        if(highs[i] > highs[i-1]) higherHighs++;
-                        if(lows[i] < lows[i-1]) lowerLows++;
-                    }
-                    
-                    const total = highs.length - 1;
-                    const bullishStrength = higherHighs / total;
-                    const bearishStrength = lowerLows / total;
-                    
-                    let direction = "neutral";
-                    if(bullishStrength > 0.6) direction = "alcista fuerte";
-                    else if(bullishStrength > 0.4) direction = "alcista débil";
-                    else if(bearishStrength > 0.6) direction = "bajista fuerte";
-                    else if(bearishStrength > 0.4) direction = "bajista débil";
-                    
-                    return {
-                        direction: direction,
-                        strength: Math.max(bullishStrength, bearishStrength),
-                        structure: bullishStrength > bearishStrength ? "higher highs" : "lower lows"
-                    };
+                // Factor consistencia (aumenta confianza si es alta)
+                if (consistency > 0.7) {
+                    confidence += 10;
+                    reasons.push(`alta consistencia`);
+                } else if (consistency < 0.4) {
+                    confidence -= 10;
+                    reasons.push(`baja consistencia`);
                 }
                 
-                // 5. Niveles dinámicos
-                findDynamicLevels(imageData, height) {
-                    const numZones = 8;
-                    const zoneHeight = Math.floor(height / numZones);
-                    let zoneIntensities = [];
-                    
-                    for(let z = 0; z < numZones; z++) {
-                        const startY = z * zoneHeight;
-                        let intensity = 0;
-                        let count = 0;
-                        
-                        for(let y = startY; y < startY + zoneHeight && y < height; y += 4) {
-                            for(let x = 0; x < 80; x += 4) {
-                                const idx = (y * 80 + x) * 4;
-                                if(idx < imageData.data.length) {
-                                    intensity += (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
-                                    count++;
-                                }
-                            }
-                        }
-                        
-                        zoneIntensities.push({ level: z, intensity: count > 0 ? intensity / count : 0 });
-                    }
-                    
-                    const threshold = Math.max(...zoneIntensities.map(z => z.intensity)) * 0.7;
-                    const strongZones = zoneIntensities.filter(z => z.intensity > threshold);
-                    
-                    return {
-                        supports: strongZones.slice(0, 2),
-                        resistances: strongZones.slice(2, 4),
-                        nearestSupport: strongZones[0],
-                        nearestResistance: strongZones[strongZones.length - 1]
-                    };
+                // Ajuste por volatilidad
+                if (volatility > 0.25) {
+                    confidence -= 10;
+                    reasons.push(`alta volatilidad`);
                 }
                 
-                // 6. Análisis de Liquidez
-                analyzeLiquidity(imageData) {
-                    let totalBrightness = 0;
-                    let highBrightnessCount = 0;
-                    let samples = 0;
-                    
-                    for(let i = 0; i < imageData.data.length; i += 50) {
-                        const brightness = (imageData.data[i] + imageData.data[i+1] + imageData.data[i+2]) / 3;
-                        totalBrightness += brightness;
-                        if(brightness > 200) highBrightnessCount++;
-                        samples++;
-                    }
-                    
-                    const avgBrightness = samples > 0 ? totalBrightness / samples : 0;
-                    const liquidityScore = highBrightnessCount / samples;
-                    
-                    return {
-                        score: liquidityScore,
-                        level: liquidityScore > 0.3 ? "alta" : liquidityScore > 0.15 ? "media" : "baja",
-                        avgBrightness: avgBrightness
-                    };
-                }
+                // Decisión final
+                confidence = Math.min(94, Math.max(35, Math.floor(confidence)));
                 
-                // COMBINACIÓN DE TODAS LAS SEÑALES
-                combineSignals(candlestick, smc, indicators, structure, levels, liquidity) {
-                    let totalScore = 0;
-                    let weightFactors = [];
-                    
-                    // Peso de cada sistema
-                    totalScore += candlestick.bullishStrength * 1.2;
-                    totalScore -= candlestick.bearishStrength * 1.2;
-                    weightFactors.push({ system: "Velas", value: candlestick.bullishStrength - candlestick.bearishStrength });
-                    
-                    totalScore += smc.score * 0.8;
-                    weightFactors.push({ system: "SMC", value: smc.score });
-                    
-                    if(indicators.momentum.direction === "bullish") totalScore += indicators.momentum.strength * 50;
-                    else if(indicators.momentum.direction === "bearish") totalScore -= indicators.momentum.strength * 50;
-                    weightFactors.push({ system: "Momentum", value: indicators.momentum.value * 50 });
-                    
-                    if(structure.trend.includes("alcista")) totalScore += structure.strength * 40;
-                    else if(structure.trend.includes("bajista")) totalScore -= structure.strength * 40;
-                    weightFactors.push({ system: "Estructura", value: structure.strength * (structure.trend.includes("alcista") ? 40 : -40) });
-                    
-                    if(liquidity.level === "alta") totalScore += 15;
-                    else if(liquidity.level === "baja") totalScore -= 10;
-                    
-                    // Confianza basada en consistencia entre sistemas
-                    const consistency = this.calculateConsistency(weightFactors);
-                    
-                    let decision = "NEUTRAL";
-                    let confidence = Math.min(96, Math.max(50, 55 + Math.abs(totalScore) * 0.4));
-                    
-                    if(totalScore > 30) decision = "COMPRA FUERTE 🔥";
-                    else if(totalScore > 15) decision = "COMPRA 📈";
-                    else if(totalScore < -30) decision = "VENTA FUERTE 🔥";
-                    else if(totalScore < -15) decision = "VENTA 📉";
-                    
-                    return {
-                        decision: decision,
-                        score: Math.floor(totalScore),
-                        confidence: Math.floor(confidence),
-                        consistency: Math.floor(consistency),
-                        factors: weightFactors,
-                        recommendation: this.getRecommendation(decision, confidence)
-                    };
-                }
-                
-                calculateConsistency(factors) {
-                    let values = factors.map(f => Math.abs(f.value));
-                    const avg = values.reduce((a,b) => a + b, 0) / values.length;
-                    let variance = 0;
-                    for(let v of values) variance += Math.pow(v - avg, 2);
-                    variance /= values.length;
-                    const consistency = Math.max(30, Math.min(95, 100 - Math.sqrt(variance) * 2));
-                    return Math.floor(consistency);
-                }
-                
-                getRecommendation(decision, confidence) {
-                    if(decision.includes("COMPRA")) {
-                        if(confidence > 80) return "🎯 OPORTUNIDAD EXCELENTE - Considere entrada con stop ajustado";
-                        if(confidence > 65) return "✅ Buena oportunidad - Espere confirmación";
-                        return "⚡ Oportunidad moderada - Gestión de riesgo estricta";
-                    } else if(decision.includes("VENTA")) {
-                        if(confidence > 80) return "⚠️ FUERTE SEÑAL BAJISTA - Considere cobertura";
-                        if(confidence > 65) return "📉 Tendencia bajista - Evite largos";
-                        return "🔻 Señal débil - Espere más confirmación";
-                    }
-                    return "⚖️ Mercado lateral - Mejor esperar";
-                }
-                
-                // Estrategia completa con niveles
-                generateCompleteStrategy(signal, levels, indicators) {
-                    let entry = "";
-                    let stopLoss = "";
-                    let takeProfit = [];
-                    
-                    if(signal.decision.includes("COMPRA")) {
-                        entry = "Zona de entrada: Buscar pullback en soporte";
-                        stopLoss = `Stop Loss: Debajo del soporte en nivel ${levels.nearestSupport ? levels.nearestSupport.level : "clave"}`;
-                        takeProfit = ["TP1: +1.5%", "TP2: +3%", "TP3: +5% (trailing stop)"];
-                    } else if(signal.decision.includes("VENTA")) {
-                        entry = "Zona de entrada: Rechazo en resistencia";
-                        stopLoss = `Stop Loss: Encima de resistencia en nivel ${levels.nearestResistance ? levels.nearestResistance.level : "clave"}`;
-                        takeProfit = ["TP1: -1.5%", "TP2: -3%", "TP3: -5% (trailing stop)"];
+                if (confidence >= 65) {
+                    if (trend > 0.03 || slope > 0.015) {
+                        decision = "COMPRAR 🟢";
+                    } else if (trend < -0.03 || slope < -0.015) {
+                        decision = "VENDER 🔴";
                     } else {
-                        entry = "Sin entrada clara - Aguardar rompimiento";
-                        stopLoss = "N/A - Mercado sin dirección definida";
-                        takeProfit = ["Esperar señal más clara"];
+                        decision = "NEUTRAL 🟠";
+                        confidence = 50;
                     }
-                    
-                    return { entry, stopLoss, takeProfit };
-                }
-                
-                // Respuestas profesionales a preguntas
-                answerProfessionalQuestion(question, strategy, signal, levels) {
-                    question = question.toLowerCase();
-                    
-                    if(question.includes("stop loss") || question.includes("stop")) {
-                        return `🛡️ ${strategy.stopLoss}`;
-                    }
-                    if(question.includes("target") || question.includes("tp") || question.includes("take profit")) {
-                        return `🎯 Objetivos: ${strategy.takeProfit.join(" | ")}`;
-                    }
-                    if(question.includes("entry") || question.includes("entrada")) {
-                        return `📌 ${strategy.entry}`;
-                    }
-                    if(question.includes("riesgo") || question.includes("risk")) {
-                        const riskLevel = signal.confidence > 75 ? "bajo" : signal.confidence > 55 ? "moderado" : "alto";
-                        return `⚠️ Riesgo ${riskLevel} (confianza ${signal.confidence}%). Ratio riesgo/recompensa recomendado: 1:2`;
-                    }
-                    if(question.includes("soporte")) {
-                        return `📊 Soporte clave: Nivel ${levels.nearestSupport ? levels.nearestSupport.level + 1 : "desconocido"} con intensidad ${levels.nearestSupport ? Math.floor(levels.nearestSupport.intensity) : "N/A"}`;
-                    }
-                    if(question.includes("resistencia")) {
-                        return `📈 Resistencia clave: Nivel ${levels.nearestResistance ? levels.nearestResistance.level + 1 : "desconocido"} con intensidad ${levels.nearestResistance ? Math.floor(levels.nearestResistance.intensity) : "N/A"}`;
-                    }
-                    
-                    return `💡 Análisis: ${signal.decision} con ${signal.confidence}% confianza. Consistencia entre sistemas: ${signal.consistency}%. ${signal.recommendation}`;
-                }
-                
-                // Formateo de salida profesional
-                getFormattedAnalysis(result) {
-                    const signal = result.signal;
-                    const strategy = result.strategy;
-                    const emoji = signal.decision.includes("COMPRA") ? "🚀" : signal.decision.includes("VENTA") ? "⚠️" : "⚖️";
-                    
-                    let html = `<div style="font-weight:800;margin-bottom:12px;font-size:1rem;">${emoji} <span style="color:${signal.decision.includes("COMPRA") ? '#00f5a0' : signal.decision.includes("VENTA") ? '#ff6666' : '#ffb347'}">${signal.decision}</span></div>`;
-                    
-                    html += `<div class="confidence-bar" style="margin-bottom:12px;"><div class="confidence-fill" style="width: ${signal.confidence}%;"></div></div>`;
-                    
-                    html += `<div style="display:flex;justify-content:space-between;margin-bottom:12px;gap:10px;flex-wrap:wrap;">
-                        <span>🎯 Confianza: ${signal.confidence}%</span>
-                        <span>🔄 Consistencia: ${signal.consistency}%</span>
-                        <span>📊 Score: ${signal.score}</span>
-                    </div>`;
-                    
-                    html += `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;margin-bottom:12px;">
-                        <strong>📋 ESTRATEGIA:</strong><br>
-                        • ${strategy.entry}<br>
-                        • ${strategy.stopLoss}<br>
-                        • ${strategy.takeProfit.join("<br>• ")}
-                    </div>`;
-                    
-                    html += `<div style="margin-bottom:8px;"><strong>🔬 SISTEMAS ACTIVOS:</strong><br>`;
-                    for(let factor of signal.factors.slice(0,4)) {
-                        const icon = factor.value > 0 ? "🟢" : factor.value < 0 ? "🔴" : "⚪";
-                        html += `• ${icon} ${factor.system}: ${factor.value > 0 ? "+" : ""}${Math.floor(factor.value)}<br>`;
-                    }
-                    html += `</div>`;
-                    
-                    html += `<div style="font-size:0.75rem;color:#aaa;margin-top:8px;">💡 ${signal.recommendation}</div>`;
-                    
-                    if(result.userResponse) {
-                        html += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);background:rgba(0,245,160,0.05);border-radius:10px;padding:10px;">
-                            <strong>💬 ${result.userResponse}</strong>
-                        </div>`;
-                    }
-                    
-                    html += `<div style="font-size:0.65rem;color:#777;margin-top:10px;">⏱️ ${new Date().toLocaleTimeString()} | 🧠 6 Sistemas IA</div>`;
-                    
-                    return html;
-                }
-            }
-            
-            // ========== CONFIGURACIÓN ==========
-            const video = document.getElementById('webcam');
-            const canvas = document.getElementById('snapshot');
-            const promptInput = document.getElementById('user-prompt');
-            const sendBtn = document.getElementById('send-btn');
-            const tradingBtn = document.getElementById('trading-btn');
-            const clearBtn = document.getElementById('clear-btn');
-            const chatLog = document.getElementById('chat-log');
-            
-            let cameraActive = false;
-            let currentAnalysisLock = false;
-            const ai = new ProfessionalTradingAI();
-            
-            function addMessage(text, type, isHtml = false) {
-                const div = document.createElement('div');
-                div.className = `msg ${type}-msg`;
-                if(isHtml) {
-                    div.innerHTML = text;
+                } else if (confidence >= 55) {
+                    if (trend > 0.05) decision = "COMPRAR 🟢";
+                    else if (trend < -0.05) decision = "VENDER 🔴";
+                    else decision = "NEUTRAL 🟠";
                 } else {
-                    div.innerText = text;
+                    decision = "NEUTRAL 🟠";
                 }
-                chatLog.appendChild(div);
-                setTimeout(() => div.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+                
+                // Información adicional
+                const trendStrength = Math.abs(trend) * 100;
+                const momentumStrength = Math.abs(instantMomentum) * 100;
+                
+                return {
+                    decision: decision,
+                    confidence: confidence,
+                    trend: trend,
+                    slope: slope,
+                    momentum: instantMomentum,
+                    consistency: consistency,
+                    volatility: volatility,
+                    reasons: reasons,
+                    trendStrength: Math.min(100, Math.floor(trendStrength)),
+                    momentumStrength: Math.min(100, Math.floor(momentumStrength)),
+                    lastScore: lastScore,
+                    timestamp: new Date()
+                };
             }
             
-            async function captureFrame() {
-                if(!video.videoWidth || !video.videoHeight) {
-                    await new Promise(resolve => {
-                        if(video.readyState >= 2) return resolve();
-                        video.addEventListener('loadeddata', () => resolve(), { once: true });
-                    });
+            average(arr) {
+                if (arr.length === 0) return 0;
+                return arr.reduce((a, b) => a + b, 0) / arr.length;
+            }
+            
+            shouldSendSignal(signal) {
+                if (!signal) return false;
+                
+                const now = Date.now();
+                const isDifferent = this.lastSignal !== signal.decision;
+                const cooldownPassed = (now - this.lastSignalTime) >= this.signalCooldown;
+                
+                // Enviar señal si es diferente o pasó el cooldown
+                if (isDifferent || cooldownPassed) {
+                    this.lastSignal = signal.decision;
+                    this.lastSignalTime = now;
+                    return true;
                 }
-                canvas.width = Math.min(video.videoWidth, 1280);
-                canvas.height = Math.min(video.videoHeight, 720);
+                return false;
+            }
+            
+            getSignalColor(signal) {
+                if (signal.decision.includes("COMPRAR")) return "buy";
+                if (signal.decision.includes("VENDER")) return "sell";
+                return "neutral";
+            }
+        }
+        
+        // ========== CONFIGURACIÓN ==========
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('snapshot');
+        const clearBtn = document.getElementById('clearBtn');
+        const chatLog = document.getElementById('chat-log');
+        const statusIndicator = document.getElementById('statusIndicator');
+        
+        // Elementos de UI en vivo
+        const signalDot = document.getElementById('signalDot');
+        const signalText = document.getElementById('signalText');
+        const signalConfidence = document.getElementById('signalConfidence');
+        const trendValue = document.getElementById('trendValue');
+        const momentumValue = document.getElementById('momentumValue');
+        const confidenceValue = document.getElementById('confidenceValue');
+        
+        let cameraActive = false;
+        let analysisInterval = null;
+        let frameCount = 0;
+        const ai = new RealTimeTradingAI();
+        
+        function addSignalToHistory(signal) {
+            const color = ai.getSignalColor(signal);
+            const emoji = signal.decision.includes("COMPRAR") ? "🟢" : signal.decision.includes("VENDER") ? "🔴" : "🟠";
+            const confidenceStars = "★".repeat(Math.floor(signal.confidence / 20)) + "☆".repeat(5 - Math.floor(signal.confidence / 20));
+            
+            const div = document.createElement('div');
+            div.className = `msg signal-msg ${color}`;
+            div.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <strong>${emoji} ${signal.decision}</strong>
+                    <span style="font-size:0.7rem;">${signal.confidence}% ${confidenceStars}</span>
+                </div>
+                <div style="font-size:0.75rem;color:#aaa;margin-top:4px;">
+                    📈 Tendencia: ${signal.trend > 0 ? '+' : ''}${signal.trend.toFixed(3)} | 
+                    ⚡ Mom: ${signal.momentum > 0 ? '+' : ''}${signal.momentum.toFixed(3)}
+                </div>
+                <div style="font-size:0.7rem;color:#888;margin-top:4px;">
+                    ${signal.reasons.slice(0,2).join(' • ')}
+                </div>
+                <div style="font-size:0.6rem;color:#555;margin-top:4px;">
+                    ${signal.timestamp.toLocaleTimeString()}
+                </div>
+            `;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            // Limitar historial a 50 mensajes
+            while (chatLog.children.length > 50) {
+                chatLog.removeChild(chatLog.firstChild);
+            }
+        }
+        
+        function updateLiveUI(signal) {
+            if (!signal) return;
+            
+            const color = ai.getSignalColor(signal);
+            
+            // Actualizar UI en vivo
+            signalDot.className = `signal-dot ${color}`;
+            signalText.className = `signal-text ${color}`;
+            signalText.textContent = signal.decision;
+            signalConfidence.textContent = `Confianza: ${signal.confidence}%`;
+            
+            // Actualizar métricas
+            trendValue.textContent = signal.trend > 0 ? `+${signal.trend.toFixed(3)}` : signal.trend.toFixed(3);
+            trendValue.style.color = signal.trend > 0 ? '#00f5a0' : signal.trend < 0 ? '#ff6666' : '#ffb347';
+            momentumValue.textContent = signal.momentum > 0 ? `+${signal.momentum.toFixed(3)}` : signal.momentum.toFixed(3);
+            momentumValue.style.color = signal.momentum > 0 ? '#00f5a0' : signal.momentum < 0 ? '#ff6666' : '#ffb347';
+            confidenceValue.textContent = `${signal.confidence}%`;
+            confidenceValue.style.color = signal.confidence > 65 ? '#00f5a0' : signal.confidence > 45 ? '#ffb347' : '#ff6666';
+        }
+        
+        async function captureAndAnalyze() {
+            if (!cameraActive || !video.videoWidth) return;
+            
+            try {
+                canvas.width = Math.min(video.videoWidth, 320);
+                canvas.height = Math.min(video.videoHeight, 240);
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                return canvas;
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const signal = ai.analyzeFrame(imageData, canvas.width, canvas.height);
+                
+                if (signal && ai.shouldSendSignal(signal)) {
+                    addSignalToHistory(signal);
+                }
+                
+                // Siempre actualizar UI con la última señal
+                if (signal) {
+                    updateLiveUI(signal);
+                }
+                
+                frameCount++;
+                statusIndicator.textContent = `🎯 Analizando... ${frameCount} frames`;
+                
+            } catch (error) {
+                console.error("Error en análisis:", error);
             }
-            
-            async function performAnalysis(mode) {
-                if(currentAnalysisLock) {
-                    addMessage("⏳ Analizando con 6 sistemas...", "ai");
-                    return;
-                }
+        }
+        
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" } 
+                });
+                video.srcObject = stream;
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
+                cameraActive = true;
+                statusIndicator.textContent = "✅ Cámara activa - Analizando en tiempo real";
                 
-                if(!cameraActive || !video.videoWidth) {
-                    addMessage("📷 Activando cámara...", "ai");
-                    return;
-                }
+                // Iniciar análisis continuo (cada 0.5 segundos = 2 frames por segundo)
+                analysisInterval = setInterval(() => {
+                    captureAndAnalyze();
+                }, 500);
                 
-                currentAnalysisLock = true;
-                sendBtn.disabled = true;
-                tradingBtn.disabled = true;
-                
-                const userQuestion = promptInput.value.trim();
-                addMessage(`${mode === 'fast' ? "⚡ Análisis Multi-Sistema" : "🎯 Análisis PRO + Estrategia"} procesando...`, "user");
-                
-                try {
-                    const capturedCanvas = await captureFrame();
-                    const result = await ai.analyzeImage(capturedCanvas, userQuestion);
-                    const formattedOutput = ai.getFormattedAnalysis(result);
-                    addMessage(formattedOutput, "ai", true);
-                    if(userQuestion) promptInput.value = "";
-                } catch(error) {
-                    console.error(error);
-                    addMessage(`❌ Error: ${error.message}`, "ai");
-                } finally {
-                    currentAnalysisLock = false;
-                    sendBtn.disabled = false;
-                    tradingBtn.disabled = false;
-                }
+            } catch(err) {
+                console.error(err);
+                cameraActive = false;
+                statusIndicator.textContent = "❌ Error de cámara - Verifica permisos";
+                signalText.textContent = "ERROR";
             }
-            
-            async function startCamera() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { facingMode: "environment" } 
-                    });
-                    video.srcObject = stream;
-                    await new Promise((resolve) => {
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            resolve();
-                        };
-                    });
-                    cameraActive = true;
-                    addMessage("✅ Cámara activa - IA Profesional lista", "ai");
-                } catch(err) {
-                    console.error(err);
-                    cameraActive = false;
-                    addMessage("❌ Error de cámara - Verifica permisos", "ai");
-                }
+        }
+        
+        clearBtn.addEventListener('click', () => {
+            while(chatLog.children.length > 0) chatLog.removeChild(chatLog.lastChild);
+            addSignalToHistory({
+                decision: "NEUTRAL 🟠",
+                confidence: 0,
+                trend: 0,
+                momentum: 0,
+                reasons: ["Sistema reiniciado"],
+                timestamp: new Date()
+            });
+        });
+        
+        window.addEventListener('load', startCamera);
+        
+        window.addEventListener('beforeunload', () => {
+            if (analysisInterval) clearInterval(analysisInterval);
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
             }
-            
-            sendBtn.addEventListener('click', () => performAnalysis('fast'));
-            tradingBtn.addEventListener('click', () => performAnalysis('pro'));
-            clearBtn.addEventListener('click', () => {
-                while(chatLog.children.length > 0) chatLog.removeChild(chatLog.lastChild);
-                addMessage("🧹 Chat limpio. IA Multi-Estrategia lista.", "ai");
-            });
-            
-            promptInput.addEventListener('keypress', (e) => {
-                if(e.key === 'Enter' && !currentAnalysisLock && cameraActive) {
-                    e.preventDefault();
-                    performAnalysis('fast');
-                }
-            });
-            
-            window.addEventListener('load', startCamera);
-            
-            window.addEventListener('beforeunload', () => {
-                if(video.srcObject) {
-                    video.srcObject.getTracks().forEach(track => track.stop());
-                }
-            });
-        })();
-    </script>
+        });
+        
+        // Mensaje de bienvenida
+        setTimeout(() => {
+            if (cameraActive) {
+                addSignalToHistory({
+                    decision: "NEUTRAL 🟠",
+                    confidence: 0,
+                    trend: 0,
+                    momentum: 0,
+                    reasons: ["Sistema listo", "Analizando en tiempo real"],
+                    timestamp: new Date()
+                });
+            }
+        }, 2000);
+        
+    })();
+</script>
 </body>
 </html>
