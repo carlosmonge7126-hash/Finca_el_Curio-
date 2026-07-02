@@ -885,13 +885,21 @@ function hideMsg(elId){
 //  STORAGE
 // ═══════════════════════════════════════════
 function guardar(){
-  localStorage.setItem('fec_plantas',JSON.stringify(DB.plantas));
-  localStorage.setItem('fec_clientes',JSON.stringify(DB.clientes));
-  localStorage.setItem('fec_reservas',JSON.stringify(DB.reservas));
-  localStorage.setItem('fec_cancelaciones',JSON.stringify(DB.cancelaciones));
-  localStorage.setItem('fec_padrinos',JSON.stringify(DB.padrinos));
-  localStorage.setItem('fec_cfg',JSON.stringify(CFG));
-  localStorage.setItem('fec_bancos',JSON.stringify(BANCOS));
+  try {
+    localStorage.setItem('fec_plantas',JSON.stringify(DB.plantas));
+    localStorage.setItem('fec_clientes',JSON.stringify(DB.clientes));
+    localStorage.setItem('fec_reservas',JSON.stringify(DB.reservas));
+    localStorage.setItem('fec_cancelaciones',JSON.stringify(DB.cancelaciones));
+    localStorage.setItem('fec_padrinos',JSON.stringify(DB.padrinos));
+    localStorage.setItem('fec_cfg',JSON.stringify(CFG));
+    localStorage.setItem('fec_bancos',JSON.stringify(BANCOS));
+  } catch (err) {
+    // El navegador tiene un límite de espacio local (~5-10MB). Si se llena
+    // (por ejemplo, por muchas imágenes guardadas como texto), no dejamos
+    // que esto rompa el resto del sitio: seguimos funcionando en memoria y,
+    // para imágenes, la copia real queda a salvo en Supabase.
+    console.warn('⚠️ No se pudo guardar todo en el almacenamiento local (posible límite de espacio alcanzado):', err.message);
+  }
 }
 function cargar(){
   const p=localStorage.getItem('fec_plantas');
