@@ -1109,14 +1109,21 @@ function subirImagen(key){
     return;
   }
   const reader = new FileReader();
-  reader.onload = function(e){
+  reader.onload = async function(e){
     if(!CFG.images) CFG.images = {};
     CFG.images[key] = e.target.result;
     guardar();
     aplicarImagenes();
     renderTours();   // Actualiza los tours inmediatamente
     renderImageUploader();
-    showMsg('msgConfigGuardado', '✅ Imagen actualizada', 'ok', 5000);
+    showMsg('msgConfigGuardado', '⏳ Subiendo imagen...', 'ok', 5000);
+
+    const okNube = await guardarConfigNube(key, e.target.result);
+    if (okNube) {
+      showMsg('msgConfigGuardado', '✅ Imagen actualizada para todos los visitantes', 'ok', 5000);
+    } else {
+      showMsg('msgConfigGuardado', '⚠️ Imagen guardada solo en este navegador (no se pudo subir a la nube)', 'err', 6000);
+    }
     console.log(`Imagen ${key} actualizada.`);
   };
   reader.readAsDataURL(input.files[0]);
@@ -1128,6 +1135,7 @@ function eliminarImagen(key){
   aplicarImagenes();
   renderTours();
   renderImageUploader();
+  eliminarConfigNube(key);
   showMsg('msgConfigGuardado', '🗑 Imagen eliminada', 'err', 5000);
   console.log(`Imagen ${key} eliminada.`);
 }
@@ -2246,8 +2254,8 @@ document.addEventListener('DOMContentLoaded', init);
 // ═══════════════════════════════════════════
 
 // ⚠️ REEMPLAZA ESTA URL por la de tu proyecto real en el dashboard de Supabase (Settings > API)
-const SUPABASE_URL = 'https://zfcrhljfleuzxecykvw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_tyg1SKAaU8eREDbNQ-zuSA_LMWFE-Z3';
+const SUPABASE_URL = 'https://TU_PROYECTO_ID.supabase.co'; 
+const SUPABASE_ANON_KEY = 'TU_ANON_KEY_AQUI'; 
 
 let supabaseClient = null;
 
@@ -2258,6 +2266,8 @@ function initSupabase() {
     
     // 🔥 Descargamos las reservas inmediatamente DESPUÉS de confirmar que el cliente existe
     descargarReservasDesdeSupabase();
+    // 🖼️ Descargamos la configuración del sitio (logo, hero, imágenes) para que TODOS los visitantes la vean
+    cargarConfigDesdeNube();
   } else {
     console.warn("⚠️ SDK de Supabase no detectado en el navegador aún");
   }
@@ -2327,6 +2337,76 @@ async function descargarReservasDesdeSupabase() {
 
   } catch (err) {
     console.error("❌ Error crítico de red con Supabase:", err);
+  }
+}
+
+// ═══════════════════════════════════════════
+// CONFIGURACIÓN DEL SITIO EN LA NUBE (logo, hero, imágenes de tours...)
+// Para que lo que cambia el admin lo vean TODOS los visitantes.
+// ═══════════════════════════════════════════
+async function cargarConfigDesdeNube() {
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from('configuracion_sitio')
+      .select('*');
+
+    if (error) {
+      console.error("❌ Error cargando configuración del sitio:", error.message);
+      return;
+    }
+    if (!data || data.length === 0) return;
+
+    if (!CFG.images) CFG.images = {};
+    data.forEach(fila => {
+      CFG.images[fila.clave] = fila.valor;
+    });
+    guardar();
+    aplicarImagenes();
+    renderTours?.();
+    renderImageUploader?.();
+    console.log("🖼️ Configuración del sitio sincronizada desde Supabase");
+  } catch (err) {
+    console.error("❌ Error crítico cargando configuración del sitio:", err);
+  }
+}
+
+async function guardarConfigNube(clave, valor) {
+  if (!supabaseClient) {
+    console.warn("⚠️ No se pudo sincronizar la imagen en la nube (sin conexión a Supabase). Solo quedó guardada en este navegador.");
+    return false;
+  }
+  try {
+    const { error } = await supabaseClient
+      .from('configuracion_sitio')
+      .upsert({ clave, valor, actualizado_en: new Date().toISOString() }, { onConflict: 'clave' });
+
+    if (error) {
+      console.error("❌ Error guardando configuración en la nube:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("❌ Error crítico guardando configuración en la nube:", err);
+    return false;
+  }
+}
+
+async function eliminarConfigNube(clave) {
+  if (!supabaseClient) return false;
+  try {
+    const { error } = await supabaseClient
+      .from('configuracion_sitio')
+      .delete()
+      .eq('clave', clave);
+    if (error) {
+      console.error("❌ Error eliminando configuración en la nube:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("❌ Error crítico eliminando configuración en la nube:", err);
+    return false;
   }
 }
 
