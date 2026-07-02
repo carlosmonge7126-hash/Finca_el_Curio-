@@ -56,7 +56,36 @@ las políticas de seguridad (RLS) necesarias.
 `signInWithPassword`. Confirma en Supabase → Authentication → Providers
 que el proveedor "Email" esté activo.
 
+## Actualización: las imágenes del admin ahora se sincronizan para todos
+
+Antes, cuando el admin subía logo/hero/imágenes de tours, esos cambios
+solo quedaban guardados en el navegador del admin (`localStorage`), por
+eso los clientes no los veían. Se agregó:
+
+- Tabla nueva `configuracion_sitio` en Supabase (está en
+  `supabase_schema.sql` — tienes que volver a correr ese archivo
+  completo en el SQL Editor para crear esta tabla nueva).
+- Cuando el admin sube o borra una imagen, ahora también se guarda/borra
+  en esa tabla (además de en su propio navegador).
+- Cuando cualquier visitante entra al sitio, `index.html` descarga esa
+  configuración de Supabase y la aplica automáticamente.
+
+⚠️ **Importante**: las imágenes se guardan como texto (base64) en la
+base de datos, no como archivos reales de un bucket de almacenamiento.
+Esto es más simple de configurar, pero funciona mejor con imágenes
+livianas (idealmente menos de 1-2 MB cada una). Si subes fotos muy
+pesadas directo de una cámara/celular, comprímelas antes de subirlas o
+avísame y armamos la versión con Supabase Storage (buckets), que es más
+robusta para archivos grandes.
+
+⚠️ **Prerrequisito**: esto solo funciona si la conexión a Supabase desde
+el navegador está funcionando (ver sección de diagnóstico del error
+`ERR_NAME_NOT_RESOLVED` que estamos resolviendo aparte). Si esa conexión
+sigue fallando, las imágenes van a seguir viéndose solo en el navegador
+del admin.
+
 ## Importante: el registro/login de clientes y el panel de admin
+
 `index.html` maneja clientes, plantas, padrinos y el panel de
 administración **enteramente con `localStorage`** (no con Supabase),
 aunque exista `api/login.js` y `api/register.js` — el frontend nunca los
