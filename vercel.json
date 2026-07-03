@@ -1,7 +1,0 @@
-{
-  "build": {
-    "env": {
-      "ENABLE_SERVERLESS_FUNCTIONS": "true"
-    }
-  }
-}
