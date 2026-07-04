@@ -1118,40 +1118,61 @@ function renderImageUploader(){
     </div>`;
   }).join('');
 }
-function subirImagen(key){
+async function subirImagen(key){
   const input = document.getElementById(`imgUpload_${key}`);
   if(!input || !input.files || !input.files[0]){
     alert('Selecciona una imagen primero.');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = async function(e){
-    if(!CFG.images) CFG.images = {};
-    CFG.images[key] = e.target.result;
-    guardar();
-    aplicarImagenes();
-    renderTours();   // Actualiza los tours inmediatamente
-    renderImageUploader();
-    showMsg('msgConfigGuardado', '⏳ Subiendo imagen...', 'ok', 5000);
+  const file = input.files[0];
+  if(!supabaseClient) initSupabase();
+  if(!supabaseClient){
+    alert('⚠️ No hay conexión con la nube. No se puede subir la imagen en este momento.');
+    return;
+  }
+  showMsg('msgConfigGuardado', '⏳ Subiendo imagen...', 'ok', 8000);
 
-    const okNube = await guardarConfigNube(key, e.target.result);
-    if (okNube) {
-      showMsg('msgConfigGuardado', '✅ Imagen actualizada para todos los visitantes', 'ok', 5000);
-    } else {
-      showMsg('msgConfigGuardado', '⚠️ Imagen guardada solo en este navegador (no se pudo subir a la nube)', 'err', 6000);
-    }
-    console.log(`Imagen ${key} actualizada.`);
-  };
-  reader.readAsDataURL(input.files[0]);
+  // Guardamos la ruta anterior para poder borrarla del Storage después de subir la nueva.
+  const urlAnterior = CFG.images?.[key];
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+  const ruta = `config/${key}_${Date.now()}.${ext}`;
+  const url = await subirArchivoAStorage(file, ruta);
+
+  if(!url){
+    showMsg('msgConfigGuardado', '❌ No se pudo subir la imagen a la nube (revisa el bucket "imagenes" en Supabase).', 'err', 7000);
+    return;
+  }
+
+  if(!CFG.images) CFG.images = {};
+  CFG.images[key] = url;
+  guardar();
+  aplicarImagenes();
+  renderTours();   // Actualiza los tours inmediatamente
+  renderImageUploader();
+
+  const okNube = await guardarConfigNube(key, url);
+  if (okNube) {
+    showMsg('msgConfigGuardado', '✅ Imagen actualizada para todos los visitantes', 'ok', 5000);
+    // Borramos la imagen anterior del Storage para no acumular archivos huérfanos.
+    const rutaAnterior = rutaDesdeUrlStorage(urlAnterior);
+    if(rutaAnterior) eliminarArchivoDeStorage(rutaAnterior);
+  } else {
+    showMsg('msgConfigGuardado', '⚠️ Imagen subida, pero no se pudo guardar la referencia en la nube', 'err', 6000);
+  }
+  console.log(`Imagen ${key} actualizada.`);
 }
 function eliminarImagen(key){
   if(!confirm('¿Eliminar esta imagen personalizada?')) return;
+  const urlActual = CFG.images?.[key];
   if(CFG.images) delete CFG.images[key];
   guardar();
   aplicarImagenes();
   renderTours();
   renderImageUploader();
   eliminarConfigNube(key);
+  const ruta = rutaDesdeUrlStorage(urlActual);
+  if(ruta) eliminarArchivoDeStorage(ruta);
   showMsg('msgConfigGuardado', '🗑 Imagen eliminada', 'err', 5000);
   console.log(`Imagen ${key} eliminada.`);
 }
@@ -1610,20 +1631,25 @@ function renderGaleriaCliente(email){
   g.innerHTML=imgs.length?imgs.map((img,i)=>`<div class="img-item"><img src="${img}"><button class="img-del" onclick="eliminarImgCliente('${email}',${i})">✖</button></div>`).join(''):`<p style="color:#888;">${lang==='es'?'Sin imágenes':'No images'}</p>`;
 }
 function eliminarImgCliente(email,idx){ DB.clientes[email].imagenes.splice(idx,1); guardar(); sincronizarClienteNube(email); renderGaleriaCliente(email); }
-function subirImgCliente(){
+async function subirImgCliente(){
   const f=document.getElementById('imgClienteFile').files[0];
   if(!f){ showMsg('msgSubirImg', lang==='es'?'⚠️ Selecciona una imagen':'⚠️ Select an image','err'); return; }
+  if(!supabaseClient) initSupabase();
+  if(!supabaseClient){ showMsg('msgSubirImg', lang==='es'?'⚠️ Sin conexión con la nube':'⚠️ No cloud connection','err'); return; }
   showMsg('msgSubirImg', lang==='es'?'⏳ Subiendo...':'⏳ Uploading...','warn',0);
-  const r=new FileReader();
-  r.onload=ev=>{
-    DB.clientes[emailParaImagen].imagenes.push(ev.target.result);
-    guardar();
-    sincronizarClienteNube(emailParaImagen);
-    renderGaleriaCliente(emailParaImagen);
-    document.getElementById('imgClienteFile').value='';
-    showMsg('msgSubirImg', lang==='es'?'✅ Imagen subida exitosamente':'✅ Image uploaded successfully','ok');
-  };
-  r.readAsDataURL(f);
+  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+  const ruta = `clientes/${emailParaImagen.replace(/[^a-zA-Z0-9]/g,'_')}/${Date.now()}.${ext}`;
+  const url = await subirArchivoAStorage(f, ruta);
+  if(!url){
+    showMsg('msgSubirImg', lang==='es'?'❌ No se pudo subir la imagen a la nube':'❌ Upload failed','err');
+    return;
+  }
+  DB.clientes[emailParaImagen].imagenes.push(url);
+  guardar();
+  await sincronizarClienteNube(emailParaImagen);
+  renderGaleriaCliente(emailParaImagen);
+  document.getElementById('imgClienteFile').value='';
+  showMsg('msgSubirImg', lang==='es'?'✅ Imagen subida exitosamente':'✅ Image uploaded successfully','ok');
 }
 
 // ═══════════════════════════════════════════
@@ -1760,7 +1786,7 @@ function actualizarSelPlantas(){
   const s=document.getElementById('selPlantaAdmin'); if(!s) return;
   s.innerHTML='<option value="">Seleccionar</option>'+Object.entries(DB.plantas).filter(([c,p])=>p.clienteEmail).map(([c,p])=>`<option value="${c}">${c} — ${DB.clientes[p.clienteEmail]?.nombre||''}</option>`).join('');
 }
-function guardarPlantaAdmin(){
+async function guardarPlantaAdmin(){
   const c=document.getElementById('selPlantaAdmin').value, f=document.getElementById('imagenPlanta'), com=document.getElementById('comentarioPlantaAdmin').value;
   if(!c){ showMsg('msgPlantaAdmin','⚠️ Selecciona una planta','err'); return; }
   const finish=()=>{
@@ -1771,10 +1797,16 @@ function guardarPlantaAdmin(){
     showMsg('msgPlantaAdmin','✅ Planta actualizada exitosamente','ok');
   };
   if(f.files&&f.files[0]){
-    showMsg('msgPlantaAdmin','⏳ Procesando imagen...','warn',0);
-    const r=new FileReader();
-    r.onload=e=>{ DB.plantas[c].imagen=e.target.result; finish(); };
-    r.readAsDataURL(f.files[0]);
+    if(!supabaseClient) initSupabase();
+    if(!supabaseClient){ showMsg('msgPlantaAdmin','❌ Sin conexión con la nube','err'); return; }
+    showMsg('msgPlantaAdmin','⏳ Subiendo imagen...','warn',0);
+    const file=f.files[0];
+    const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const ruta=`plantas/${c}_${Date.now()}.${ext}`;
+    const url = await subirArchivoAStorage(file, ruta);
+    if(!url){ showMsg('msgPlantaAdmin','❌ No se pudo subir la imagen a la nube','err'); return; }
+    DB.plantas[c].imagen=url;
+    finish();
   } else finish();
 }
 function renderPlantasAdmin(){
@@ -2381,6 +2413,50 @@ const SUPABASE_URL = 'https://zfcrhljjfleuzxecykvw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_tyg1SKAaU8eREDbNQ-zuSA_LMWFE-Z3'; 
 
 let supabaseClient = null;
+
+// 📦 Bucket de Supabase Storage donde se guardan TODAS las imágenes
+// (logo, hero, tours, fotos de plantas, fotos de clientes...).
+// Debe existir un bucket público con este nombre en el proyecto de Supabase.
+const STORAGE_BUCKET = 'imagenes';
+
+// Sube un archivo real (no base64) al Storage de Supabase y devuelve la URL pública.
+async function subirArchivoAStorage(file, ruta) {
+  if (!supabaseClient) return null;
+  try {
+    const { error: errorSubida } = await supabaseClient.storage
+      .from(STORAGE_BUCKET)
+      .upload(ruta, file, { upsert: true, cacheControl: '3600' });
+    if (errorSubida) {
+      console.error('❌ Error subiendo archivo a Storage:', errorSubida.message);
+      return null;
+    }
+    const { data } = supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(ruta);
+    return data?.publicUrl || null;
+  } catch (err) {
+    console.error('❌ Error crítico subiendo archivo a Storage:', err);
+    return null;
+  }
+}
+
+// Elimina un archivo del Storage a partir de su ruta interna (no de la URL completa).
+async function eliminarArchivoDeStorage(ruta) {
+  if (!supabaseClient || !ruta) return;
+  try {
+    const { error } = await supabaseClient.storage.from(STORAGE_BUCKET).remove([ruta]);
+    if (error) console.warn('⚠️ No se pudo eliminar el archivo del Storage:', error.message);
+  } catch (err) {
+    console.warn('⚠️ Error crítico eliminando archivo del Storage:', err);
+  }
+}
+
+// Dada una URL pública de Supabase Storage, devuelve la ruta interna del archivo
+// (lo que se necesita para poder eliminarlo después).
+function rutaDesdeUrlStorage(url) {
+  if (!url || typeof url !== 'string') return null;
+  const marcador = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+  const idx = url.indexOf(marcador);
+  return idx >= 0 ? url.slice(idx + marcador.length) : null;
+}
 
 function initSupabase() {
   if (typeof supabase !== 'undefined') {
