@@ -65,7 +65,7 @@ function encabezadoCorreo({ baseUrl, titulo }) {
   return `
     <img src="${baseUrl}/fondo-correo.jpg" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
     <div style="background:linear-gradient(135deg,#0d3b1e,#1f5b32);padding:20px 24px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio 🌿</h1>
       <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
     </div>`;
 }
@@ -97,8 +97,8 @@ function plantillaCorreo({ nombre, fecha, horario, tour, lang, telefonoFinca, mo
   const waTexto = es ? 'escribinos por WhatsApp' : 'message us on WhatsApp';
   const waEnlace = waLink ? `<a href="${waLink}" style="color:#1f5b32;font-weight:bold;text-decoration:underline;">${waTexto}</a>` : waTexto;
   const despedida = es
-    ? `Si querés reagendar tu visita podés ingresar a http://finca-elcurio.vercel.app/#reservas o tenés alguna pregunta, ${waEnlace} o responde este correo. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
-    : `If you want to reschedule your visit, you can go to http://finca-elcurio.vercel.app/#reservas or if you have any questions, ${waEnlace} or reply to this email. We'll gladly help you find a new date!`;
+    ? `Reagenda tu visita ingresando a http://finca-elcurio.vercel.app/#reservas, contactandonos por medio de ${waEnlace} o respondiendo este correo. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
+    : `Reschedule your visit by going to http://finca-elcurio.vercel.app/#reservas, contacting us through ${waEnlace}, or replying to this email. We'll gladly help you find a new date!`;
   const firma = es ? 'Con cariño, el equipo de Finca El Curio 🌱' : 'With care, the Finca El Curio team 🌱';
 
   const encabezado = encabezadoCorreo({ baseUrl, titulo });
