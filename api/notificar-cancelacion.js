@@ -85,8 +85,8 @@ function plantillaCorreo({ nombre, fecha, horario, tour, lang, telefonoFinca, mo
   const titulo = es ? 'Tu reserva fue cancelada' : 'Your reservation was cancelled';
   const saludo = es ? `Hola ${nombre},` : `Hi ${nombre},`;
   const cuerpo = es
-    ? `Te escribimos para avisarte que tu visita a <strong>Finca El Curio</strong> que tenías agendada fue <strong>cancelada</strong> por nuestro equipo.`
-    : `We're writing to let you know that your upcoming visit to <strong>Finca El Curio</strong> was <strong>cancelled</strong> by our team.`;
+    ? `Te escribimos para informarte que tu visita a <strong>Finca El Curio</strong> que tenías agendada fue <strong>cancelada</strong> por nuestro equipo.`
+    : `We are writing to inform you that your scheduled visit to <strong>Finca El Curio</strong> has been <strong>canceled</strong> by our team.`;
   const motivoHtml = motivo
     ? `<p style="font-size:14px;line-height:1.6;color:#555;margin:0 0 18px;"><strong>${es ? 'Motivo' : 'Reason'}:</strong> ${motivo}</p>`
     : '';
@@ -97,8 +97,8 @@ function plantillaCorreo({ nombre, fecha, horario, tour, lang, telefonoFinca, mo
   const waTexto = es ? 'escribinos por WhatsApp' : 'message us on WhatsApp';
   const waEnlace = waLink ? `<a href="${waLink}" style="color:#1f5b32;font-weight:bold;text-decoration:underline;">${waTexto}</a>` : waTexto;
   const despedida = es
-    ? `Si querés reagendar tu visita o tenés alguna pregunta, ${waEnlace} o responde este correo. ¡Con gusto te ayudamos a encontrar una nueva fecha!`
-    : `If you'd like to reschedule your visit or have any questions, ${waEnlace} or reply to this email. We'd love to help you find a new date!`;
+    ? `Si querés reagendar tu visita podés ingresar a http://finca-elcurio.vercel.app/#reservas o tenés alguna pregunta, ${waEnlace} o responde este correo. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
+    : `If you want to reschedule your visit, you can go to http://finca-elcurio.vercel.app/#reservas or if you have any questions, ${waEnlace} or reply to this email. We'll gladly help you find a new date!`;
   const firma = es ? 'Con cariño, el equipo de Finca El Curio 🌱' : 'With care, the Finca El Curio team 🌱';
 
   const encabezado = encabezadoCorreo({ baseUrl, titulo });
