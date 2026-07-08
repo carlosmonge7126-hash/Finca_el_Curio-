@@ -97,8 +97,8 @@ function plantillaCorreo({ nombre, fecha, horario, tour, lang, telefonoFinca, mo
   const waTexto = es ? 'escribinos por WhatsApp' : 'message us on WhatsApp';
   const waEnlace = waLink ? `<a href="${waLink}" style="color:#1f5b32;font-weight:bold;text-decoration:underline;">${waTexto}</a>` : waTexto;
   const despedida = es
-    ? `Reagenda tu visita ingresando a http://finca-elcurio.vercel.app/#reservas, contactandonos por medio de ${waEnlace} o respondiendo este correo. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
-    : `Reschedule your visit by going to http://finca-elcurio.vercel.app/#reservas, contacting us through ${waEnlace}, or replying to this email. We'll gladly help you find a new date!`;
+    ? `Reagenda tu visita ingresando a http://finca-elcurio.vercel.app/#reservas, respondiendo este correo o ${waEnlace}. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
+    : `Reschedule your visit by going to http://finca-elcurio.vercel.app/#reservas, replying to this email, or ${waEnlace}. We will gladly help you find a new date!`;
   const firma = es ? 'Con cariño, el equipo de Finca El Curio 🌱' : 'With care, the Finca El Curio team 🌱';
 
   const encabezado = encabezadoCorreo({ baseUrl, titulo });
