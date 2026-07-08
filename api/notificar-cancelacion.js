@@ -92,9 +92,9 @@ function plantillaCorreo({ nombre, fecha, horario, tour, lang, telefonoFinca, mo
     : '';
   const lblFecha = es ? 'Fecha que tenías reservada' : 'Date you had booked';
   const lblHora = es ? 'Hora' : 'Time';
-  const lblTour = es ? 'Actividad' : 'Activity';
+  const lblTour = es ? 'Actividad' : 'Activity'; 
   const waLink = linkWhatsApp(telefonoFinca);
-  const waTexto = es ? 'escribinos por WhatsApp' : 'message us on WhatsApp';
+  const waTexto = es ? 'escríbenos por WhatsApp' : 'message us on WhatsApp';
   const waEnlace = waLink ? `<a href="${waLink}" style="color:#1f5b32;font-weight:bold;text-decoration:underline;">${waTexto}</a>` : waTexto;
   const despedida = es
     ? `Reagenda tu visita ingresando a http://finca-elcurio.vercel.app/#reservas, respondiendo este correo o ${waEnlace}. ¡Con gusto te ayudaremos a encontrar una nueva fecha!`
