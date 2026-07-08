@@ -1,0 +1,13 @@
+{
+  "build": {
+    "env": {
+      "ENABLE_SERVERLESS_FUNCTIONS": "true"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/notificar-recordatorio",
+      "schedule": "0 15 * * *"
+    }
+  ]
+}
