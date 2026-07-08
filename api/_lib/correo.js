@@ -76,20 +76,29 @@ function imagenFondoUrl(baseUrl) {
   return `${baseUrl}/fondo-correo.jpg`;
 }
 
-// tono: qué tan visible se ve la foto de fondo debajo del degradado
-// verde. "suave" = degradado más translúcido (se ve más la foto,
-// úsalo en el correo de bienvenida/recordatorio); "normal" = un poco
-// más opaco para separaciones o avisos delicados como cancelaciones.
+// Encabezado: foto real (<img>) arriba + barra de color sólido con el
+// título justo debajo. Antes la foto se ponía con CSS "background-image"
+// sobre un <div>, con el texto encima. Eso se veía bien en la mayoría de
+// clientes de correo web, PERO Outlook de escritorio (que usa el motor de
+// Word para pintar el HTML, no un navegador real) prácticamente no soporta
+// background-image sin un truco extra (VML), así que ahí la foto
+// simplemente no aparecía. Un <img> normal SIEMPRE se ve —es la forma más
+// compatible de mostrar una imagen en un correo—, así que unificamos todos
+// los correos (reserva, recordatorio, cancelación) con esta misma técnica.
+//
+// tono: qué tan oscura se ve la barra de color debajo de la foto. "suave"
+// = verde un poco más claro (correo de bienvenida/recordatorio); "normal"
+// = verde más oscuro, para avisos más serios como cancelaciones.
 export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' }) {
-  const capaOscura = tono === 'suave'
-    ? 'linear-gradient(135deg,rgba(13,59,30,.62),rgba(31,91,50,.5))'
-    : 'linear-gradient(135deg,rgba(13,59,30,.78),rgba(31,91,50,.68))';
-  const fondo = `background-image:${capaOscura},url('${imagenFondoUrl(baseUrl)}');background-size:cover;background-position:center;`;
+  const gradiente = tono === 'suave'
+    ? 'linear-gradient(135deg,#0d3b1e,#1f5b32)'
+    : 'linear-gradient(135deg,#0a2e17,#173f24)';
   return `
-    <div style="${fondo}padding:32px 24px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;text-shadow:0 2px 10px rgba(0,0,0,.55);">🌿 Finca El Curio</h1>
-      <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;text-shadow:0 2px 8px rgba(0,0,0,.55);">${titulo}</p>
-      ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;text-shadow:0 2px 8px rgba(0,0,0,.55);">${subtitulo}</p>` : ''}
+    <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
+    <div style="background:${gradiente};padding:20px 24px;text-align:center;">
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
+      <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
+      ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
     </div>`;
 }
 
