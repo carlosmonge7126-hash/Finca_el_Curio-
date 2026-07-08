@@ -96,7 +96,7 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
   return `
     <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
     <div style="background:${gradiente};padding:20px 24px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio 🌿</h1>
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
       <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
       ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
     </div>`;
@@ -121,4 +121,38 @@ export function filaDato(icono, etiqueta, valor, redondeo) {
     <td style="padding:12px 14px;background:${fondo};border-radius:${radio};font-size:13px;color:#5b5b45;">${icono} ${etiqueta}</td>
     <td style="padding:12px 14px;background:${fondo};border-radius:${radio};font-size:15px;font-weight:bold;color:#0d3b1e;text-align:right;">${valor}</td>
   </tr>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Plantilla del correo de recordatorio ("¡Nos vemos mañana!").
+// Vive acá (compartida) para que la pueda usar tanto el cron
+// automático (notificar-recordatorio.js) como el botón de envío
+// manual del panel de admin (notificar-recordatorio-manual.js),
+// y así ambos manden exactamente el mismo correo.
+// ─────────────────────────────────────────────────────────────
+export function plantillaRecordatorio({ nombre, fecha, horario, tour, telefonoFinca, baseUrl }) {
+  const fechaBonita = formatearFecha(fecha, 'es');
+  const titulo = '¡Nos vemos mañana!';
+  const saludo = `Hola ${nombre},`;
+  const cuerpo = `¡Te esperamos el día de mañana en <strong>Finca El Curio</strong>! Este es un pequeño recordatorio de tu visita.`;
+  const waLink = linkWhatsApp(telefonoFinca);
+  const waTexto = 'escribinos por WhatsApp';
+  const waEnlace = waLink ? `<a href="${waLink}" style="color:#1f5b32;font-weight:bold;text-decoration:underline;">${waTexto}</a>` : waTexto;
+  const despedida = `Si necesitás cambiar algo de último momento, ${waEnlace} o responde este correo.`;
+  const firma = 'Con cariño, el equipo de Finca El Curio 🌱';
+
+  const encabezado = encabezadoCorreo({ baseUrl, titulo, subtitulo: '¡Te esperamos el día de mañana en Finca El Curio!', tono: 'suave' });
+  const filas = `<table style="width:100%;border-collapse:collapse;margin-bottom:22px;">
+      ${filaDato('📅', 'Fecha', fechaBonita, 'arriba')}
+      ${filaDato('🕐', 'Hora', horario, tour ? '' : 'abajo')}
+      ${tour ? filaDato('🌾', 'Actividad', tour, 'abajo') : ''}
+    </table>`;
+  const cuerpoHtml = `
+    <p style="font-size:16px;margin:0 0 12px;">${saludo}</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 22px;">${cuerpo}</p>
+    ${filas}
+    <p style="font-size:14px;line-height:1.6;color:#555;margin:0 0 18px;">${despedida}</p>
+    <p style="font-size:14px;color:#1f5b32;font-weight:bold;margin:0;">${firma}</p>`;
+
+  return tarjetaCorreo(encabezado, cuerpoHtml);
 }
