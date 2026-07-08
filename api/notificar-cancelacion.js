@@ -65,7 +65,7 @@ function encabezadoCorreo({ baseUrl, titulo }) {
   return `
     <img src="${baseUrl}/fondo-correo.jpg" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
     <div style="background:linear-gradient(135deg,#0d3b1e,#1f5b32);padding:20px 24px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio 🌿</h1>
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio </h1>
       <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
     </div>`;
 }
