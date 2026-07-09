@@ -3211,9 +3211,7 @@ async function enviarReservaSupabase(datos) {
     return { ok: false, id: null };
   }
 }
-    // RESERVA MAKE //
-// Dentro de la función que maneja el envío de tu formulario de reservas:
-const enviarReservaAMake = async (datosReserva) => {
+const enviarReservaAMake = async () => {
   const webhookUrl = 'https://hook.us2.make.com/loq72nupkfqkkzld76gyc1xli15jij4e';
 
   try {
@@ -3222,24 +3220,30 @@ const enviarReservaAMake = async (datosReserva) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      // Pasamos los campos ordenados que Make va a registrar
+      // Mandamos datos de prueba estáticos para que Make los reciba SÍ O SÍ
       body: JSON.stringify({
-        nombre: datosReserva.nombre,       // Nombre del cliente
-        fecha: datosReserva.fecha,         // Fecha seleccionada
-        hora: datosReserva.hora,           // Hora seleccionada
-        cantidad: datosReserva.cantidad,   // Cantidad de personas
-        telefono: datosReserva.telefono    // Por si deseas guardarlo de una vez
+        nombre: "Carlos Monge",
+        fecha: "2026-07-15",
+        hora: "14:00",
+        cantidad: "4",
+        telefono: "88888888"
       }),
     });
 
     if (response.ok) {
-      console.log('Reserva sincronizada con éxito en el flujo.');
+      console.log('✅ ¡Prueba enviada con éxito a Make!');
+    } else {
+      console.log('❌ Make respondió con error:', response.status);
     }
   } catch (error) {
-    console.error('Error enviando los datos a Make:', error);
+    console.error('❌ Error de red hacia Make:', error);
   }
 };
-// ═══════════════════════════════════════════
+
+// ⚠️ MÁNDALA A LLAMAR INMEDIATAMENTE AL FINAL DEL ARCHIVO PARA LA PRUEBA:
+enviarReservaAMake();
+    
+    // ═══════════════════════════════════════════
 // GUARDAR PADRINO/MADRINA EN SUPABASE (vía /api/padrino)
 // ═══════════════════════════════════════════
 async function enviarPadrinoSupabase(datos) {
