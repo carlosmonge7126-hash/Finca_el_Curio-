@@ -3211,7 +3211,34 @@ async function enviarReservaSupabase(datos) {
     return { ok: false, id: null };
   }
 }
+    // RESERVA MAKE //
+// Dentro de la función que maneja el envío de tu formulario de reservas:
+const enviarReservaAMake = async (datosReserva) => {
+  const webhookUrl = 'https://hook.us2.make.com/loq72nupkfqkkzld76gyc1xli15jij4e';
 
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Pasamos los campos ordenados que Make va a registrar
+      body: JSON.stringify({
+        nombre: datosReserva.nombre,       // Nombre del cliente
+        fecha: datosReserva.fecha,         // Fecha seleccionada
+        hora: datosReserva.hora,           // Hora seleccionada
+        cantidad: datosReserva.cantidad,   // Cantidad de personas
+        telefono: datosReserva.telefono    // Por si deseas guardarlo de una vez
+      }),
+    });
+
+    if (response.ok) {
+      console.log('Reserva sincronizada con éxito en el flujo.');
+    }
+  } catch (error) {
+    console.error('Error enviando los datos a Make:', error);
+  }
+};
 // ═══════════════════════════════════════════
 // GUARDAR PADRINO/MADRINA EN SUPABASE (vía /api/padrino)
 // ═══════════════════════════════════════════
