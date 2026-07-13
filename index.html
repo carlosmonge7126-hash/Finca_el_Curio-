@@ -3215,7 +3215,7 @@ async function subirArchivoAStorage(file, ruta) {
   try {
     const { error: errorSubida } = await supabaseClient.storage
       .from(STORAGE_BUCKET)
-      .upload(ruta, file, { upsert: true, cacheControl: '3600' });
+      .upload(ruta, file, { upsert: true, cacheControl: '3000' });
     if (errorSubida) {
       console.error('❌ Error subiendo archivo a Storage:', errorSubida.message);
       return null;
