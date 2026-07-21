@@ -72,10 +72,17 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
         </td>
       </tr>
       <tr>
-        <td style="background-color:${fondoVerde};padding:20px 24px;text-align:center;">
-          <h1 style="color:#ffffff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
-          <p style="color:#ffffff;margin:6px 0 0;font-size:15px;font-weight:bold;">${titulo}</p>
-          ${subtitulo ? `<p style="color:#e7f0d9;margin:4px 0 0;font-size:13px;">${subtitulo}</p>` : ''}
+        <td style="background-color:${fondoVerde} !important;padding:20px 24px;text-align:center;">
+          <h1 style="margin:0;font-size:22px;letter-spacing:.5px;">
+            <span style="color:#ffffff !important;text-decoration:none;">🌿 Finca El Curio</span>
+          </h1>
+          <p style="margin:6px 0 0;font-size:15px;font-weight:bold;">
+            <span style="color:#ffffff !important;text-decoration:none;">${titulo}</span>
+          </p>
+          ${subtitulo ? `
+          <p style="margin:4px 0 0;font-size:13px;">
+            <span style="color:#e7f0d9 !important;text-decoration:none;">${subtitulo}</span>
+          </p>` : ''}
         </td>
       </tr>
     </table>`;
