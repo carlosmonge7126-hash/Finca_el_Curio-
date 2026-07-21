@@ -6,26 +6,6 @@ import {
 
 // ═══════════════════════════════════════════════════════════
 // Endpoint UNIFICADO de notificaciones por correo.
-//
-// Antes existían 5 archivos separados en /api (notificar-reserva.js,
-// notificar-reserva-reasignada.js, notificar-cancelacion.js,
-// notificar-recordatorio.js, notificar-recordatorio-manual.js). Cada
-// archivo en /api cuenta como una "Serverless Function" independiente
-// en Vercel, y el plan Hobby solo permite 12 por despliegue. Al sumar
-// el resto de endpoints del sitio (clientes, login, register,
-// reserva-actualizar, reserva-eliminar, reservar, padrino, test) se
-// llegaba a 13 y el build fallaba.
-//
-// Este archivo une los 5 en uno solo (misma lógica, mismas plantillas
-// de correo, mismo comportamiento) y elige cuál correo mandar según
-// el parámetro "tipo" en la URL: /api/notificar?tipo=reserva
-//
-// Tipos disponibles:
-//   ?tipo=reserva              -> antes notificar-reserva.js
-//   ?tipo=reserva-reasignada   -> antes notificar-reserva-reasignada.js
-//   ?tipo=cancelacion          -> antes notificar-cancelacion.js
-//   ?tipo=recordatorio-manual  -> antes notificar-recordatorio-manual.js
-//   ?tipo=recordatorio         -> antes notificar-recordatorio.js (cron diario)
 // ═══════════════════════════════════════════════════════════
 
 const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -38,9 +18,10 @@ const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_
 function plantillaReserva({ nombre, fecha, horario, tour, personas, lang, telefonoFinca, baseUrl }) {
   const fechaBonita = formatearFecha(fecha, lang);
   const es = lang !== 'en';
-  // Reemplaza tus dos líneas originales del título por estas dos:
-const tituloTexto = es ? '¡Reserva confirmada!' : 'Reservation confirmed!';
-const titulo = `<span style="color:#1c2815; font-weight:bold;">${tituloTexto}</span>`;
+  
+  // CORRECCIÓN: Texto plano sin tags <span style="color:..."> alrededor
+  const titulo = es ? '¡Reserva confirmada!' : 'Reservation confirmed!';
+  
   const saludo = es ? `Hola ${nombre},` : `Hi ${nombre},`;
   const cuerpo = es
     ? `Tu visita a <strong>Finca El Curio</strong> ya tiene fecha y hora asignada. ¡Te esperamos!`
@@ -379,7 +360,6 @@ export default async function handler(req, res) {
       if (req.method !== 'POST') return res.status(405).json({ exito: false, error: 'Método no permitido' });
       return manejarRecordatorioManual(req, res);
     case 'recordatorio':
-      // El cron de Vercel llama esto por GET, así que no se restringe el método aquí.
       return manejarRecordatorioAutomatico(req, res);
     default:
       return res.status(400).json({ exito: false, error: 'Parámetro "tipo" inválido o faltante. Usa uno de: reserva, reserva-reasignada, cancelacion, recordatorio-manual, recordatorio.' });
