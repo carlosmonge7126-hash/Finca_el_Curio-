@@ -8,10 +8,6 @@ import nodemailer from 'nodemailer';
 // código reutilizable, no una ruta pública.
 // ═══════════════════════════════════════════════════════════
 
-// Variables de entorno requeridas en Vercel (ya configuradas para el
-// correo de confirmación, se reutilizan aquí):
-//   GMAIL_USER          -> finca.el.curio@gmail.com
-//   GMAIL_APP_PASSWORD  -> contraseña de aplicación de 16 caracteres
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -50,49 +46,23 @@ export function linkWhatsApp(telefonoFinca) {
   return `https://wa.me/${conCodigo}`;
 }
 
-// Devuelve "https://tu-dominio.vercel.app" a partir de la propia
-// petición (funciona igual en producción, en previews de Vercel y en
-// dominio propio, sin tener que guardar la URL a mano en ningún lado).
 export function obtenerBaseUrl(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const proto = req.headers['x-forwarded-proto'] || 'https';
   return `${proto}://${host}`;
 }
 
-// ─────────────────────────────────────────────────────────────
-// Imagen de fondo del encabezado de TODOS los correos.
-//
-// Es una foto fija (el camino empedrado de la finca), servida como
-// archivo normal (/fondo-correo.jpg, ~53KB) en vez de incrustada en
-// base64 dentro del HTML. Esto es importante para el peso del correo:
-// Gmail (y otros) "recortan" los mensajes cuyo HTML pasa de ~102KB y
-// muestran un enlace de "Ver mensaje completo" en vez del correo
-// entero. Una imagen embebida en base64 cuenta contra ese límite;
-// una imagen enlazada por URL NO cuenta (se descarga aparte, como
-// cualquier imagen de una página web), así que el correo se mantiene
-// liviano sin importar cuántas veces se use esta plantilla.
-// ─────────────────────────────────────────────────────────────
 function imagenFondoUrl(baseUrl) {
   return `${baseUrl}/fondo-correo.jpg`;
 }
 
-// Encabezado: foto real (<img>) arriba + barra de color sólido con el
-// título justo debajo. Antes la foto se ponía con CSS "background-image"
-// sobre un <div>, con el texto encima. Eso se veía bien en la mayoría de
-// clientes de correo web, PERO Outlook de escritorio (que usa el motor de
-// Word para pintar el HTML, no un navegador real) prácticamente no soporta
-// background-image sin un truco extra (VML), así que ahí la foto
-// simplemente no aparecía. Un <img> normal SIEMPRE se ve —es la forma más
-// compatible de mostrar una imagen en un correo—, así que unificamos todos
-// los correos (reserva, recordatorio, cancelación) con esta misma técnica.
-//
-// tono: qué tan oscura se ve la barra de color debajo de la foto. "suave"
-// = verde un poco más claro (correo de bienvenida/recordatorio); "normal"
-// = verde más oscuro, para avisos más serios como cancelaciones.
+// ─────────────────────────────────────────────────────────────
+// Encabezado corregido: usa colores sólidos de fondo (#1f5b32 / #0d3b1e)
+// para garantizar que los títulos sean SIEMPRE visibles en todos
+// los clientes de correo (Outlook, Gmail, Apple Mail).
+// ─────────────────────────────────────────────────────────────
 export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' }) {
-  const gradiente = tono === 'suave'
-    ? 'linear-gradient(135deg,#0d3b1e,#1f5b32)'
-    : 'linear-gradient(135deg,#0a2e17,#173f24)';
+  const fondoVerde = tono === 'suave' ? '#1f5b32' : '#0d3b1e';
 
   return `
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -102,10 +72,10 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
         </td>
       </tr>
       <tr>
-        <td style="background:${gradiente};padding:20px 24px;text-align:center;">
-          <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
-          <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
-          ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
+        <td style="background-color:${fondoVerde};padding:20px 24px;text-align:center;">
+          <h1 style="color:#ffffff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
+          <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;font-weight:bold;">${titulo}</p>
+          ${subtitulo ? `<p style="color:#cfe0b8;margin:4px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
         </td>
       </tr>
     </table>`;
