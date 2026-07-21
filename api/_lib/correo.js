@@ -115,7 +115,7 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
 // cualquier correo. `contenido` es el HTML interior ya armado.
 export function tarjetaCorreo(encabezadoHtml, contenidoHtml) {
   return `
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f3ed;padding:20px 0;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:10px 0;">
     <tr>
       <td align="center">
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="520" style="width:100%;max-width:520px;background:#fdfbf6;border-radius:16px;overflow:hidden;border:1px solid #e4e0d4;font-family:Georgia,'Times New Roman',serif;">
