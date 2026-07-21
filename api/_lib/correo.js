@@ -93,8 +93,11 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
   const gradiente = tono === 'suave'
     ? 'linear-gradient(135deg,#0d3b1e,#1f5b32)'
     : 'linear-gradient(135deg,#0a2e17,#173f24)';
+
   return `
-    <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
+    <div style="width:100%;margin:0;padding:0;">
+      <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" style="width:100%;min-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;margin:0;padding:0;" />
+    </div>
     <div style="background:${gradiente};padding:20px 24px;text-align:center;">
       <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
       <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
