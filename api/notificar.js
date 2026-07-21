@@ -39,6 +39,7 @@ function plantillaReserva({ nombre, fecha, horario, tour, personas, lang, telefo
   const fechaBonita = formatearFecha(fecha, lang);
   const es = lang !== 'en';
   const titulo = es ? '¡Reserva confirmada!' : 'Reservation confirmed!';
+  const titulo = `<span style="color:#1c2815; font-weight:bold;">${textoTitulo}</span>`;
   const saludo = es ? `Hola ${nombre},` : `Hi ${nombre},`;
   const cuerpo = es
     ? `Tu visita a <strong>Finca El Curio</strong> ya tiene fecha y hora asignada. ¡Te esperamos!`
