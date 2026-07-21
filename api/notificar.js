@@ -38,7 +38,9 @@ const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_
 function plantillaReserva({ nombre, fecha, horario, tour, personas, lang, telefonoFinca, baseUrl }) {
   const fechaBonita = formatearFecha(fecha, lang);
   const es = lang !== 'en';
-  const titulo = es ? '¡Reserva confirmada!' : 'Reservation confirmed!';
+  // Reemplaza tus dos líneas originales del título por estas dos:
+const tituloTexto = es ? '¡Reserva confirmada!' : 'Reservation confirmed!';
+const titulo = `<span style="color:#1c2815; font-weight:bold;">${tituloTexto}</span>`;
   const saludo = es ? `Hola ${nombre},` : `Hi ${nombre},`;
   const cuerpo = es
     ? `Tu visita a <strong>Finca El Curio</strong> ya tiene fecha y hora asignada. ¡Te esperamos!`
