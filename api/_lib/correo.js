@@ -74,13 +74,12 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
       <tr>
         <td style="background-color:${fondoVerde};padding:20px 24px;text-align:center;">
           <h1 style="color:#ffffff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
-          <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;font-weight:bold;">${titulo}</p>
-          ${subtitulo ? `<p style="color:#cfe0b8;margin:4px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
+          <p style="color:#ffffff;margin:6px 0 0;font-size:15px;font-weight:bold;">${titulo}</p>
+          ${subtitulo ? `<p style="color:#e7f0d9;margin:4px 0 0;font-size:13px;">${subtitulo}</p>` : ''}
         </td>
       </tr>
     </table>`;
 }
-
 // Envoltorio común (tarjeta blanca redondeada) para el cuerpo de
 // cualquier correo. `contenido` es el HTML interior ya armado.
 export function tarjetaCorreo(encabezadoHtml, contenidoHtml) {
