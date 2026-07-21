@@ -95,26 +95,44 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
     : 'linear-gradient(135deg,#0a2e17,#173f24)';
 
   return `
-    <div style="width:100%;margin:0;padding:0;">
-      <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" style="width:100%;min-width:100%;height:auto;display:block;border:0;outline:none;text-decoration:none;margin:0;padding:0;" />
-    </div>
-    <div style="background:${gradiente};padding:20px 24px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
-      <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
-      ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
-    </div>`;
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="padding:0;margin:0;">
+          <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
+        </td>
+      </tr>
+      <tr>
+        <td style="background:${gradiente};padding:20px 24px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
+          <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
+          ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
+        </td>
+      </tr>
+    </table>`;
 }
 
 // Envoltorio común (tarjeta blanca redondeada) para el cuerpo de
 // cualquier correo. `contenido` es el HTML interior ya armado.
 export function tarjetaCorreo(encabezadoHtml, contenidoHtml) {
   return `
-  <div style="font-family:Georgia,'Times New Roman',serif;max-width:520px;margin:0 auto;background:#fdfbf6;border-radius:16px;overflow:hidden;border:1px solid #e4e0d4;">
-    ${encabezadoHtml}
-    <div style="padding:28px 26px;color:#2b2b2b;">
-      ${contenidoHtml}
-    </div>
-  </div>`;
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f3ed;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="520" style="width:100%;max-width:520px;background:#fdfbf6;border-radius:16px;overflow:hidden;border:1px solid #e4e0d4;font-family:Georgia,'Times New Roman',serif;">
+          <tr>
+            <td style="padding:0;margin:0;">
+              ${encabezadoHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 26px;color:#2b2b2b;">
+              ${contenidoHtml}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`;
 }
 
 export function filaDato(icono, etiqueta, valor, redondeo) {
