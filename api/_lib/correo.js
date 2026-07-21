@@ -96,7 +96,7 @@ export function encabezadoCorreo({ baseUrl, titulo, subtitulo, tono = 'suave' })
   return `
     <img src="${imagenFondoUrl(baseUrl)}" alt="Finca El Curio" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;" />
     <div style="background:${gradiente};padding:20px 24px;text-align:center;">
-      <h1 style="color:#1c2815;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
+      <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:.5px;">🌿 Finca El Curio</h1>
       <p style="color:#e7f0d9;margin:6px 0 0;font-size:14px;">${titulo}</p>
       ${subtitulo ? `<p style="color:#cfe0b8;margin:2px 0 0;font-size:12.5px;">${subtitulo}</p>` : ''}
     </div>`;
