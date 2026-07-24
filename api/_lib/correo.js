@@ -147,7 +147,7 @@ export function plantillaRecordatorio({ nombre, fecha, horario, tour, telefonoFi
   const despedida = `Si necesitás cambiar algo de último momento, ${waEnlace} o responde este correo.`;
   const firma = 'Con cariño, el equipo de Finca El Curio 🌱';
 
-  const encabezado = encabezadoCorreo({ baseUrl, titulo, subtitulo: '¡Te esperamos el día de mañana en Finca El Curio!', tono: 'suave' });
+  const encabezado = encabezadoCorreo({ baseUrl, titulo, tono: 'suave' });
   const filas = `<table style="width:100%;border-collapse:collapse;margin-bottom:22px;">
       ${filaDato('📅', 'Fecha', fechaBonita, 'arriba')}
       ${filaDato('🕐', 'Hora', horario, tour ? '' : 'abajo')}
