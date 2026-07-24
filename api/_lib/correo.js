@@ -47,6 +47,15 @@ export function linkWhatsApp(telefonoFinca) {
 }
 
 export function obtenerBaseUrl(req) {
+  // Preferimos SITE_URL (variable de entorno fija con el dominio real).
+  // Es clave para el cron de recordatorios: esas requests las dispara
+  // Vercel directo contra la URL de despliegue (*.vercel.app), que está
+  // protegida por Vercel Authentication. Si armamos el link de la imagen
+  // con ese host, el cliente de correo no puede descargarla (401).
+  // Con SITE_URL forzamos siempre el dominio público real.
+  if (process.env.SITE_URL) {
+    return process.env.SITE_URL.replace(/\/+$/, '');
+  }
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const proto = req.headers['x-forwarded-proto'] || 'https';
   return `${proto}://${host}`;
