@@ -1,4 +1,25 @@
 import nodemailer from 'nodemailer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Content-ID fijo para la imagen de encabezado. Al ir "adjunta" en el
+// propio correo (en vez de cargada desde una URL externa), el cliente
+// de correo (Outlook, Gmail, etc.) la muestra siempre, sin bloquearla
+// por privacidad y sin depender de que el dominio público esté
+// accesible en el momento del envío.
+export const LOGO_CID = 'logo-finca-el-curio';
+
+// Adjunto reutilizable con la imagen de encabezado. Se agrega al
+// arreglo "attachments" de cada sendMail junto al resto del correo.
+export function adjuntoLogo() {
+  return {
+    filename: 'fondo-correo.jpg',
+    path: path.join(__dirname, '..', '..', 'fondo-correo.jpg'),
+    cid: LOGO_CID
+  };
+}
 
 // ═══════════════════════════════════════════════════════════
 // Módulo compartido por todos los correos que manda el sitio
@@ -62,7 +83,10 @@ export function obtenerBaseUrl(req) {
 }
 
 function imagenFondoUrl(baseUrl) {
-  return `${baseUrl}/fondo-correo.jpg`;
+  // "baseUrl" ya no se usa para la imagen (ver adjuntoLogo/LOGO_CID más
+  // arriba); se deja el parámetro por compatibilidad con las llamadas
+  // existentes a encabezadoCorreo({ baseUrl, ... }).
+  return `cid:${LOGO_CID}`;
 }
 
 // ─────────────────────────────────────────────────────────────
