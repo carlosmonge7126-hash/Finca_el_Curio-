@@ -153,6 +153,18 @@ export function filaDato(icono, etiqueta, valor, redondeo) {
   </tr>`;
 }
 
+export function plantillaRecuperacion({ codigo, baseUrl }) {
+  const titulo = '🔐 Código de recuperación';
+  const encabezado = encabezadoCorreo({ baseUrl, titulo, tono: 'normal' });
+  const cuerpoHtml = `
+    <p style="font-size:15px;line-height:1.6;margin:0 0 18px;">Recibimos una solicitud para cambiar la contraseña de tu cuenta en <strong>Finca El Curio</strong>. Usá este código para continuar:</p>
+    <p style="text-align:center;margin:0 0 18px;">
+      <span style="display:inline-block;background:#f1f0e6;border-radius:10px;padding:14px 26px;font-size:28px;font-weight:bold;letter-spacing:6px;color:#0d3b1e;">${codigo}</span>
+    </p>
+    <p style="font-size:13px;line-height:1.6;color:#777;margin:0;">El código vence en 15 minutos. Si no fuiste vos quien lo pidió, podés ignorar este correo con tranquilidad: tu contraseña no cambia a menos que se use este código.</p>`;
+  return tarjetaCorreo(encabezado, cuerpoHtml);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Plantilla del correo de recordatorio ("¡Nos vemos mañana!").
 // Vive acá (compartida) para que la pueda usar tanto el cron
