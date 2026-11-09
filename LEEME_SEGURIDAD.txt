@@ -1,0 +1,7 @@
+ORDEN DE APLICACIÓN
+1) En GitHub (rama main): sube TODO el contenido de esta carpeta respetando las rutas (api/, api/_lib/, scripts/ ...).
+2) En GitHub: BORRA estos 3 archivos (ya no se usan y eran un riesgo): api/login.js, api/register.js, api/test.js
+3) En Vercel → Settings → Environment Variables, agrega CRON_SECRET (texto largo al azar) y haz Redeploy.
+4) Prueba la página (reservar, login de cliente, login de admin, subir una foto, enviar un correo).
+5) Supabase → SQL Editor: pega y corre supabase_seguridad.sql.
+6) (Opcional) node scripts/migrar-passwords.mjs  /  --aplicar  → pasa contraseñas viejas a bcrypt.
